@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* src/index.css 또는 src/assets/global.css 등 */
+html, body {
+    overflow-y: scroll;
+  }
+  

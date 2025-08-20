@@ -1,0 +1,44 @@
+새 볼륨 볼륨에 대한 폴더 경로의 목록입니다.
+볼륨 일련 번호는 7C4A-993B입니다.
+G:\WORKSPACE\HOMEPAGE\YOGA-HOMEPAGE\SRC
+|   App.css
+|   App.jsx
+|   index.css
+|   main.jsx
+|   
++---assets
+|       react.svg
+|       
++---components
+|   |   About.jsx
+|   |   Footer.jsx
+|   |   Header.jsx
+|   |   Hero.jsx
+|   |   
+|   +---desktop
+|   |       FooterDesktop.jsx
+|   |       HeaderDesktop.jsx
+|   |       
+|   +---mobile
+|   |       FooterMobile.jsx
+|   |       HeaderMobile.jsx
+|   |       
+|   \---shared
+|           Logo.jsx
+|           
++---hooks
+|       useIsMobile.js
+|       
++---layouts
+|       DesktopLayout.jsx
+|       MobileLayout.jsx
+|       
+\---pages
+    |   Home.jsx
+    |   
+    +---desktop
+    |       HomeDesktop.jsx
+    |       
+    \---mobile
+            HomeMobile.jsx
+            
