@@ -1,15 +1,11 @@
 import Hero from './sections/Hero.jsx';
 import QuoteGuruji from './sections/QuoteGuruji.jsx';
-import Pillars from './sections/Pillars.jsx';
 import AboutIYCK from './sections/AboutIYCK.jsx';
-import Lineage from './sections/Lineage.jsx';
 import Programs from './sections/Programs.jsx';
 import FAQPreview from './sections/FAQPreview.jsx';
 import TeachersPreview from './sections/TeachersPreview.jsx';
-import LearnIyengar from './sections/LearnIyengar.jsx';
-import Organization from './sections/Organization.jsx';
 import GalleryPreviewRibbon from './sections/GalleryPreviewRibbon.jsx';
-import Membership from './sections/Membership.jsx';
+// Membership section removed per latest requirements.
 import Footer from './sections/Footer.jsx';
 import NavBar from './components/NavBar.jsx';
 
@@ -19,16 +15,12 @@ export default function Landing(){
       <NavBar />
   <Hero />
   <QuoteGuruji />
-      <div id="principles"><Pillars /></div>
-      <AboutIYCK />
-  <div id="lineage"><Lineage /></div>
-  <LearnIyengar />
-  <Organization />
+  <AboutIYCK />
+  {/* 바로 워크숍(Programs) 섹션으로 이동: Practice Principles, Lineage, LearnIyengar, Organization 제거 */}
   <div id="programs"><Programs /></div>
   <GalleryPreviewRibbon />
   <FAQPreview />
   <TeachersPreview />
-      <div id="membership"><Membership /></div>
       <div id="contact"><Footer /></div>
     </main>
   );

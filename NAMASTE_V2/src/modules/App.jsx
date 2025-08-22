@@ -4,6 +4,8 @@ import IYCKPage from './iyengar/IYCK.jsx';
 import GurujiPage from './iyengar/Guruji.jsx';
 import WhatIyengarPage from './iyengar/What.jsx';
 import ProgramsIndex from './programs/ProgramsIndex.jsx';
+import TeachersPage from './iyengar/Teachers.jsx';
+import FAQPage from './faq/FAQPage.jsx';
 
 export default function App(){
   return (
@@ -17,6 +19,8 @@ export default function App(){
   <Route path="/what" element={<WhatIyengarPage />} />
   <Route path="/iyengar/what" element={<WhatIyengarPage />} />
   <Route path="/programs" element={<ProgramsIndex />} />
+  <Route path="/teachers" element={<TeachersPage />} />
+  <Route path="/faq" element={<FAQPage />} />
       </Routes>
     </BrowserRouter>
   );

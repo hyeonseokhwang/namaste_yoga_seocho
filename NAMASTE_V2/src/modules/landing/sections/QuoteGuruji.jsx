@@ -3,21 +3,25 @@ import useScrollReveal from '../hooks/useScrollReveal.js';
 export default function QuoteGuruji(){
   const ref = useScrollReveal();
   return (
-  <section ref={ref} className="relative bg-gradient-to-b from-brand-800 via-brand-700 to-brand-800 text-brand-50 py-24 overflow-hidden will-change-transform">
-      <div className="absolute inset-0 opacity-[0.22] bg-[radial-gradient(circle_at_30%_60%,#9ccfad55,transparent_60%)]" />
-  <div className="absolute -top-24 -right-24 w-[420px] h-[420px] rounded-full bg-gradient-to-br from-brand-300/10 via-brand-500/5 to-transparent blur-3xl pointer-events-none" />
+    <section
+      ref={ref}
+      aria-labelledby="quote-guruji-heading"
+      className="relative bg-gradient-to-b from-brand-800 via-brand-700 to-brand-800 text-brand-50 py-24 md:py-28 overflow-hidden will-change-transform"
+    >
+      <div className="absolute inset-0 opacity-[0.22] bg-[radial-gradient(circle_at_30%_60%,#9ccfad55,transparent_60%)]" aria-hidden="true" />
+      <div className="absolute -top-24 -right-24 w-[420px] h-[420px] rounded-full bg-gradient-to-br from-brand-300/10 via-brand-500/5 to-transparent blur-3xl pointer-events-none" aria-hidden="true" />
       <div className="container-beam relative max-w-6xl">
         <div className="grid md:grid-cols-[minmax(220px,280px)_1fr] gap-14 items-center">
-          {/* Portrait */}
-          <div className="relative mx-auto md:mx-0 w-56 h-56 md:w-64 md:h-64 rounded-3xl p-[3px] bg-gradient-to-br from-brand-200/60 via-brand-400/40 to-brand-700/60 shadow-[0_8px_28px_-6px_rgba(15,35,55,.55)]">
+          {/* Portrait decorative */}
+          <div className="relative mx-auto md:mx-0 w-56 h-56 md:w-64 md:h-64 rounded-3xl p-[3px] bg-gradient-to-br from-brand-200/60 via-brand-400/40 to-brand-700/60 shadow-[0_8px_28px_-6px_rgba(15,35,55,.55)]" aria-hidden="true">
             <div className="relative w-full h-full rounded-[1.35rem] overflow-hidden">
               <picture>
                 <source srcSet="/img/bks-iyengar-profile.webp" type="image/webp" />
                 <img
                   src="/img/bkskofibphoto.jpg"
-                  alt="B.K.S. Iyengar (Guruji) performing an asana"
+                  alt=""
                   loading="lazy"
-                  className="w-full h-full object-cover object-center scale-105 transition-transform duration-[6000ms] ease-[cubic-bezier(.25,.1,.25,1)] will-change-transform hover:scale-110"
+                  className="w-full h-full object-cover object-center scale-105 transition-transform duration-[6000ms] ease-[cubic-bezier(.25,.1,.25,1)] will-change-transform group-hover:scale-110"
                 />
               </picture>
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/50 via-transparent to-transparent mix-blend-multiply" />
@@ -27,6 +31,7 @@ export default function QuoteGuruji(){
           </div>
           {/* Quotes */}
           <figure className="space-y-8 relative">
+            <h2 id="quote-guruji-heading" className="sr-only">Guruji Quote</h2>
             <blockquote className="text-xl md:text-2xl font-serif leading-relaxed tracking-tight text-brand-50">
               “I do pray that my ending will be your beginning. The great rewards and the countless blessings of a life spent following the Inward Journey await you.”
             </blockquote>
@@ -45,7 +50,7 @@ export default function QuoteGuruji(){
           </figure>
         </div>
       </div>
-  <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-brand-300/30 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-brand-300/30 to-transparent" />
     </section>
   );
 }

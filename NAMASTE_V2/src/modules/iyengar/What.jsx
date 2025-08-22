@@ -79,72 +79,7 @@ function Article(){
               </div>
             ))}
           </div>
-          <h2 id="supplement" className="mt-24 font-serif tracking-tight text-brand-800">추가 보강 설명 (Reference)</h2>
-          <div className="not-prose mt-6 space-y-10">
-            <section className="rounded-xl p-6 bg-gradient-to-br from-brand-50 to-white ring-1 ring-brand-200/60">
-              <h3 className="text-sm font-semibold tracking-wide text-brand-800 mb-3">Props (도구)의 역할</h3>
-              <ul className="list-disc pl-5 space-y-1 text-[13px] text-gray-600">
-                <li>정렬 향상: 블록·벨트·의자·볼스터·벽은 관절 각도를 더 명확히 체감하게 함</li>
-                <li>접근성 확대: 신체 조건(연령, 가동성, 회복기)에 따른 맞춤 지원</li>
-                <li>지속 시간 확보: 안전하게 머무는 시간을 늘려 신경·호흡 인식 발달</li>
-                <li>치유적 적용: 특정 부위에 부담을 줄이며 재활·보조 수련 가능</li>
-              </ul>
-            </section>
-            <section className="rounded-xl p-6 bg-gradient-to-br from-brand-50 to-white ring-1 ring-brand-200/60">
-              <h3 className="text-sm font-semibold tracking-wide text-brand-800 mb-3">Sequencing의 구조적 사고</h3>
-              <ul className="list-disc pl-5 space-y-1 text-[13px] text-gray-600">
-                <li>Warm-up & Opening: 순환·관절 준비, 호흡 리듬 정돈</li>
-                <li>Core Theme: 특정 패밀리(Standing, Forward Extensions, Back Extensions, Inversions 등) 집중</li>
-                <li>Counter / Neutralization: 주된 패턴 후 중화 시퀀스로 긴장 재분배</li>
-                <li>Recovery & Breath: 회복 아사나 → 프라나야마 전환 혹은 사바사나</li>
-              </ul>
-            </section>
-            <section className="rounded-xl p-6 bg-gradient-to-br from-brand-50 to-white ring-1 ring-brand-200/60">
-              <h3 className="text-sm font-semibold tracking-wide text-brand-800 mb-3">Timing이 여는 내적 과정</h3>
-              <ul className="list-disc pl-5 space-y-1 text-[13px] text-gray-600">
-                <li>초기: 기계적 정렬 → 안정 확보</li>
-                <li>중기: 호흡 확장 · 감각 미세화 · 분산된 주의 수렴</li>
-                <li>심화: Effort → Effortlessness 이행, Pratyahara(감각 수렴) 단서 마련</li>
-              </ul>
-            </section>
-            <section className="rounded-xl p-6 bg-gradient-to-br from-brand-50 to-white ring-1 ring-brand-200/60">
-              <h3 className="text-sm font-semibold tracking-wide text-brand-800 mb-3">Typical Benefits (범용 정리)</h3>
-              <ul className="list-disc pl-5 space-y-1 text-[13px] text-gray-600">
-                <li>Postural Re-education & Core Stability</li>
-                <li>Mobility + Strength 동시 발달(균형 잡힌 부하)</li>
-                <li>Nervous System Regulation & Stress Modulation</li>
-                <li>Injury Prevention & 재활 보조</li>
-                <li>호흡 인식 향상 및 집중·감정 조절력 증진</li>
-              </ul>
-            </section>
-            <section className="rounded-xl p-6 bg-gradient-to-br from-brand-50 to-white ring-1 ring-brand-200/60">
-              <h3 className="text-sm font-semibold tracking-wide text-brand-800 mb-3">Practice Scope (수련 스펙트럼)</h3>
-              <ul className="list-disc pl-5 space-y-1 text-[13px] text-gray-600">
-                <li>Standing / Forward Extensions / Back Extensions / Twists</li>
-                <li>Inversions & Arm Balances (조건·단계화된 접근)</li>
-                <li>Restorative & Therapeutic Applications</li>
-                <li>Pranayama 준비: 흉곽 확장 · 척추 연장 · 신경 안정</li>
-              </ul>
-            </section>
-            <section className="rounded-xl p-6 bg-gradient-to-br from-brand-50 to-white ring-1 ring-brand-200/60">
-              <h3 className="text-sm font-semibold tracking-wide text-brand-800 mb-3">Pedagogy & Teaching Ethos</h3>
-              <ul className="list-disc pl-5 space-y-1 text-[13px] text-gray-600">
-                <li>Observation → Adjustment → Integration 루프</li>
-                <li>Clear Verbal Cues + Demonstration + Prop Adaptation</li>
-                <li>Ethics: 정직한 Self-Study(Svadhyaya) · 규율(Tapas) · 헌신(Ishvara Pranidhana)</li>
-                <li>계층적 학습: 기초 안정 → 심화 감각 → 미세 내면화</li>
-              </ul>
-            </section>
-            <section className="rounded-xl p-6 bg-gradient-to-br from-brand-50 to-white ring-1 ring-brand-200/60">
-              <h3 className="text-sm font-semibold tracking-wide text-brand-800 mb-3">연관 페이지</h3>
-              <p className="text-[13px] text-gray-600 mb-2">더 깊이 있는 전통 이해를 위해 아래 자료도 참고하세요.</p>
-              <ul className="list-disc pl-5 space-y-1 text-[13px] text-brand-700">
-                <li><a href="/guruji" className="underline decoration-dotted hover:text-brand-900">구루지 소개</a></li>
-                <li><a href="/iyck" className="underline decoration-dotted hover:text-brand-900">IYCK 소개</a></li>
-                <li><a href="/iyengar/ciyt" className="underline decoration-dotted hover:text-brand-900">CIYT (공인 교사) 안내 – 준비 중</a></li>
-              </ul>
-            </section>
-          </div>
+          {/* '추가 보강 설명 (Reference)' 섹션 제거 per request */}
         </article>
         {/* Beginner Friendly Deep-Dive (added content, clearly supplemental) */}
         <section id="beginner-guide" className="mt-32 space-y-20">

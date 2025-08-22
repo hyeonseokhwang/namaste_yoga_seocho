@@ -1,15 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import useActiveSection from '../../shared/hooks/useActiveSection.js';
 
-// type: 'hash' = home section anchor; 'route' = standalone page
-const links = [
-  { type:'hash', href: '#about', label: '소개' },
-  { type:'hash', href: '#lineage', label: '전통' },
-  { type:'route', href: '/programs', label: '프로그램' },
-  { type:'hash', href: '#membership', label: '멤버십' },
-  { type:'hash', href: '#principles', label: '원칙' },
-  { type:'hash', href: '#contact', label: '문의' },
+// Optimized menu: Consolidate lineage/info under one grouped dropdown for clarity.
+// types: hash | route | group
+const nav = [
+  { type:'hash', href:'#about', label:'소개' },
+  {
+    type:'group',
+    label:'Iyengar',
+    items:[
+      { href:'/guruji', label:'구루지' },
+      { href:'/what', label:'Iyengar Yoga' },
+      { href:'/iyck', label:'IYCK 협회' },
+    ]
+  },
+  { type:'route', href:'/programs', label:'프로그램' },
+  { type:'route', href:'/teachers', label:'교사' },
+  { type:'route', href:'/faq', label:'FAQ' },
+  { type:'hash', href:'#contact', label:'문의' },
 ];
 
 export default function NavBar(){
@@ -21,9 +30,22 @@ export default function NavBar(){
     window.addEventListener('scroll',onScroll);
     return ()=> window.removeEventListener('scroll',onScroll);
   },[]);
-  const active = useActiveSection(['about','lineage','programs','membership','contact','principles'], { offsetTop: 96 });
+  const active = useActiveSection(['about','programs','contact'], { offsetTop: 96 });
   const onHome = location.pathname === '/';
   const brandHref = onHome ? '#top' : '/';
+  const [openGroup, setOpenGroup] = useState(null); // desktop dropdown id
+  const dropdownRef = useRef(null);
+  // close dropdown on outside click
+  useEffect(()=>{
+    function onDoc(e){
+      if(dropdownRef.current && !dropdownRef.current.contains(e.target)) setOpenGroup(null);
+    }
+    document.addEventListener('mousedown', onDoc);
+    return ()=> document.removeEventListener('mousedown', onDoc);
+  },[]);
+  // close on route change
+  useEffect(()=>{ setOpenGroup(null); }, [location.pathname]);
+
   return (
     <div className={`fixed top-0 left-0 right-0 z-40 transition-colors duration-300 border-b animate-fade-in ${scrolled? 'bg-white/90 backdrop-blur-md border-white/60 shadow-sm':'bg-white/65 backdrop-blur-md border-white/50 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]'}`}>
       <div className="container-beam flex items-center justify-between py-3 md:py-4">
@@ -34,25 +56,48 @@ export default function NavBar(){
             <div className="pt-1 text-[10px] md:text-[11px] font-medium tracking-widest text-brand-700">KOREA <span className="text-gray-400">|</span> IYCK</div>
           </div>
         </a>
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
-          {links.map(l=> {
-            const isHash = l.type === 'hash';
-            const id = isHash ? l.href.replace('#','') : null;
-            const is = isHash && active === id;
-            const finalHref = isHash ? (onHome ? l.href : `/${l.href}`) : l.href; // route links keep absolute path
+        <nav ref={dropdownRef} className="hidden md:flex items-center gap-7 text-sm font-medium">
+          {nav.map(item=> {
+            if(item.type === 'group'){
+              const anyActive = item.items.some(s => location.pathname === s.href);
+              const open = openGroup === item.label;
+              return (
+                <div key={item.label} className="relative">
+                  <button
+                    onClick={()=> setOpenGroup(open? null : item.label)}
+                    className={`inline-flex items-center gap-1 px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition ${anyActive? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`}
+                    aria-haspopup="true"
+                    aria-expanded={open}
+                  >
+                    {item.label}
+                    <svg className={`w-3 h-3 transition-transform ${open? 'rotate-180':''}`} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8l5 5 5-5" /></svg>
+                  </button>
+                  {open && (
+                    <div className="absolute left-0 mt-2 w-48 rounded-xl border border-gray-200 bg-white/95 backdrop-blur shadow-lg py-2 animate-fade-in">
+                      {item.items.map(sub=> {
+                        const activeSub = location.pathname === sub.href;
+                        return (
+                          <a key={sub.label} href={sub.href} className={`block px-4 py-2 text-[13px] rounded-md mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${activeSub? 'bg-brand-50 text-brand-800 font-semibold':'text-gray-700 hover:bg-gray-100 hover:text-brand-800'}`}>{sub.label}</a>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            const isHash = item.type === 'hash';
+            const id = isHash ? item.href.replace('#','') : null;
+            const routeActive = item.type === 'route' && location.pathname === item.href;
+            const hashActive = isHash && active === id && onHome;
+            const is = routeActive || hashActive;
+            const finalHref = isHash ? (onHome ? item.href : `/${item.href}`) : item.href;
             return (
-              <a
-                key={l.label}
-                href={finalHref}
-                className={`group relative px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:rounded-md transition
-                  ${is? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`}
-              >
-                {l.label}
+              <a key={item.label} href={finalHref} className={`group relative px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition ${is? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`} aria-current={is? 'page': undefined}>
+                {item.label}
                 <span className={`pointer-events-none absolute left-0 -bottom-1 h-[2px] w-full origin-left scale-x-0 bg-brand-600 transition-transform duration-300 ${is? 'scale-x-100':'group-hover:scale-x-100'}`} />
               </a>
             );
           })}
-          <a href={onHome ? '#trial' : '/#trial'} className="px-4 py-2 rounded-full bg-brand-600 text-white hover:bg-brand-500 shadow-soft-lg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">체험 신청</a>
         </nav>
         <button onClick={()=>setOpen(true)} className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/70 border border-white/60 text-gray-700 shadow-sm backdrop-blur hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500" aria-label="메뉴 열기">
           <span className="sr-only">menu</span>
@@ -67,6 +112,7 @@ export default function NavBar(){
 function MobileSheet({onClose}){
   const location = useLocation();
   const onHome = location.pathname === '/';
+  const [openGroup, setOpenGroup] = useState(true); // default open for quick access
   return (
     <div className="fixed inset-0 z-50" aria-modal="true" role="dialog">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
@@ -81,15 +127,38 @@ function MobileSheet({onClose}){
             <svg width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"><path d="M5 5l8 8M13 5l-8 8" /></svg>
           </button>
         </div>
-        <nav className="flex-1 flex flex-col gap-4 text-sm font-medium">
-          {links.map(l=> {
-            const isHash = l.type === 'hash';
-            const finalHref = isHash ? (onHome ? l.href : `/${l.href}`) : l.href;
+        <nav className="flex-1 flex flex-col gap-2 text-sm font-medium">
+          {nav.map(item=> {
+            if(item.type === 'group'){
+              const anyActive = item.items.some(s=> location.pathname === s.href);
+              return (
+                <div key={item.label} className="border border-gray-100 rounded-lg overflow-hidden">
+                  <button onClick={()=> setOpenGroup(o=> !o)} className={`w-full flex items-center justify-between px-3 py-2 text-left ${anyActive? 'bg-brand-50 text-brand-800 font-semibold':'text-gray-700 hover:bg-gray-50'}`} aria-expanded={openGroup}>
+                    <span>{item.label}</span>
+                    <svg className={`w-4 h-4 transition-transform ${openGroup? 'rotate-180':''}`} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8l5 5 5-5" /></svg>
+                  </button>
+                  {openGroup && (
+                    <div className="px-1.5 py-1.5 flex flex-col gap-1 bg-white/60">
+                      {item.items.map(sub=> {
+                        const activeSub = location.pathname === sub.href;
+                        return (
+                          <a key={sub.label} href={sub.href} onClick={onClose} className={`px-2 py-2 rounded-md text-[13px] ${activeSub? 'bg-brand-50 text-brand-800 font-semibold':'text-gray-700 hover:bg-gray-100'}`}>{sub.label}</a>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            const isHash = item.type === 'hash';
+            const finalHref = isHash ? (onHome ? item.href : `/${item.href}`) : item.href;
+            const routeActive = item.type === 'route' && location.pathname === item.href;
+            const hashActive = isHash && onHome && window.location.hash === item.href;
+            const is = routeActive || hashActive;
             return (
-              <a key={l.label} href={finalHref} onClick={onClose} className="px-2 py-2 rounded-md hover:bg-gray-100 text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">{l.label}</a>
+              <a key={item.label} href={finalHref} onClick={onClose} aria-current={is? 'page': undefined} className={`px-2 py-2 rounded-md ${is? 'bg-brand-50 text-brand-800 font-semibold':'text-gray-700 hover:bg-gray-100'}`}>{item.label}</a>
             );
           })}
-          <a href={onHome ? '#trial' : '/#trial'} onClick={onClose} className="mt-4 inline-flex justify-center px-4 py-3 rounded-full bg-brand-600 text-white text-xs tracking-wide shadow-soft-lg hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">체험 클래스 신청</a>
         </nav>
         <p className="text-[11px] text-gray-400">© {new Date().getFullYear()} IYCK</p>
       </div>
