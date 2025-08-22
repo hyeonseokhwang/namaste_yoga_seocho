@@ -2,6 +2,7 @@ import NavBar from '../landing/components/NavBar.jsx';
 import Footer from '../landing/sections/Footer.jsx';
 import useScrollReveal from '../landing/hooks/useScrollReveal.js';
 import { useState, useEffect } from 'react';
+import { featuredWorkshop, pastWorkshops } from './data/programsData.js';
 
 export default function ProgramsIndex(){
   return (
@@ -9,7 +10,7 @@ export default function ProgramsIndex(){
       <div id="top" />
       <NavBar />
       <Hero />
-      <ProgramsOverview />
+  <ProgramsOverview />
       <div id="contact"><Footer /></div>
     </>
   );
@@ -56,22 +57,22 @@ function ProgramsOverview(){
             <FeaturedImages />
             <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6">
               <header className="space-y-3">
-                <h4 className="text-[12px] font-medium tracking-widest text-brand-600">2025 SEPTEMBER</h4>
-                <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">Eyal Shifroni 선생님 9월 워크숍</h3>
-                <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">첫 공식 한국 방문. Iyengar Yoga 정렬·프롭·시퀀스·티칭 통합 접근을 3일 집중 구조로 체험합니다.</p>
+                <h4 className="text-[12px] font-medium tracking-widest text-brand-600">{featuredWorkshop.dateLabel}</h4>
+                <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">{featuredWorkshop.title}</h3>
+                <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">{featuredWorkshop.summary}</p>
               </header>
               <div className="grid sm:grid-cols-2 gap-6 text-[13px] leading-relaxed">
                 <ul className="space-y-2 text-brand-800/80">
-                  <li><strong className="text-brand-700">일정:</strong> 9/12 14:00–17:00</li>
-                  <li><strong className="text-brand-700">세션:</strong> 9/13~14 09:30–12:30 · 14:30–16:30</li>
-                  <li><strong className="text-brand-700">총시간:</strong> 15시간</li>
-                  <li><strong className="text-brand-700">장소:</strong> 공간 920 (강남 역삼로9길 20 B1)</li>
+                  <li><strong className="text-brand-700">세션1:</strong> {featuredWorkshop.sessions[0]}</li>
+                  <li><strong className="text-brand-700">세션2:</strong> {featuredWorkshop.sessions[1]}</li>
+                  <li><strong className="text-brand-700">총시간:</strong> {featuredWorkshop.totalHours}시간</li>
+                  <li><strong className="text-brand-700">장소:</strong> {featuredWorkshop.location}</li>
                 </ul>
                 <ul className="space-y-2 text-brand-800/80">
-                  <li><strong className="text-brand-700">수강료:</strong> 429,000원 (VAT 포함)</li>
-                  <li><strong className="text-brand-700">문의:</strong> 김명규 · 홍윤서 · 김아람</li>
-                  <li><strong className="text-brand-700">이메일:</strong> iyengaryogacommunitykorea@gmail.com</li>
-                  <li><strong className="text-brand-700">포커스:</strong> 정렬·프롭 통합 / 주제별 시퀀스 / 카운터 & 회복</li>
+                  <li><strong className="text-brand-700">수강료:</strong> {featuredWorkshop.tuition}</li>
+                  <li><strong className="text-brand-700">문의:</strong> {featuredWorkshop.contacts}</li>
+                  <li><strong className="text-brand-700">이메일:</strong> {featuredWorkshop.email}</li>
+                  <li><strong className="text-brand-700">포커스:</strong> {featuredWorkshop.focus}</li>
                 </ul>
               </div>
               <div className="flex flex-wrap gap-4 pt-2">
@@ -83,7 +84,7 @@ function ProgramsOverview(){
           </div>
         </section>
 
-        <Timeline />
+  <PastSection />
       </div>
     </main>
   );
@@ -169,34 +170,17 @@ function HeroThumb({img, label}){
   );
 }
 
-function Timeline(){
+// Unified Past Section
+function PastSection(){
   return (
-    <section className="mt-32">
-      <h3 className="text-xl font-semibold tracking-tight text-brand-800 mb-8">지난 워크숍 (요약)</h3>
-      <div className="grid md:grid-cols-3 gap-10 text-[13px] text-brand-800/80">
-        <TimelineYear year="2025" list={["7월 19–20일 — George Dovas 선생님 (서울) 사진"]} links={["/gallery?folder=gallery/Namaste_Yoga/GeorgeDovas"]} />
-        <TimelineYear year="2024" list={["11월 — 홍귀석 선생님 워크숍","7월 — Justin Herold 선생님 (멘토십 준비반)","4월 — Justin Herold 선생님 (멘토십 준비반)"]} />
-        <TimelineYear year="2023" list={["10월 — Justin Herold 선생님","4월 — 홍귀석 선생님"]} />
+    <section id="past" className="mt-40">
+      <div className="mb-14 flex items-center gap-4">
+        <h3 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-brand-800">지난 워크숍</h3>
+        <div className="h-px flex-1 bg-gradient-to-r from-brand-300/70 via-brand-200/40 to-transparent" />
       </div>
-      <p className="mt-10 text-[12px] text-brand-700/50">※ 상세 사진 및 추가 연도는 워크숍 상세 페이지에서 순차 업데이트 예정.</p>
+      <PastHighlightCard />
+      <PastTimeline className="mt-32" />
     </section>
-  );
-}
-
-function TimelineYear({year, list, links}){
-  return (
-    <div className="relative pl-4 before:absolute before:left-0 before:top-1 before:bottom-1 before:w-px before:bg-gradient-to-b from-brand-400/60 to-brand-200/20">
-      <h4 className="font-semibold text-brand-700 mb-3 flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-400" />{year}</h4>
-      <ul className="space-y-2">
-        {list.map((item,i)=> {
-          const link = links && links[i];
-          if(link && item.includes('사진')){
-            return <li key={i}>{item.replace('사진','')}<a href={link} className="ml-1 text-brand-600 hover:underline">사진</a></li>;
-          }
-          return <li key={i}>{item}</li>;
-        })}
-      </ul>
-    </div>
   );
 }
 
@@ -257,6 +241,115 @@ function FeaturedImages(){
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Past workshop highlight card with integrated gallery preview & lightbox
+function PastHighlightCard(){
+  const folder = 'gallery/Namaste_Yoga/GeorgeDovas';
+  const [items,setItems] = useState([]);
+  const [loading,setLoading] = useState(true);
+  const [error,setError] = useState(null);
+  const [open,setOpen] = useState(-1);
+  useEffect(()=>{
+    let alive = true;
+    (async ()=> {
+      try {
+        setLoading(true); setError(null);
+        const res = await fetch(`/api/gallery?folder=${encodeURIComponent(folder)}`);
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const data = await res.json();
+        if(!alive) return;
+  // Limit to 6 images to keep highlight card height similar to upcoming section
+  setItems((data.items||[]).slice(0,6));
+      } catch(e){ if(alive) setError(e.message||String(e)); }
+      finally { if(alive) setLoading(false); }
+    })();
+    return ()=> { alive=false; };
+  },[]);
+
+  const transform = (url, opts='f_auto,q_auto,c_fill,w_600') => url? url.replace(/\/upload\//, `/upload/${opts}/`) : '';
+
+  useEffect(()=>{
+    if(open<0) return;
+    const onKey = (e)=>{
+      if(e.key==='Escape') setOpen(-1);
+      if(e.key==='ArrowLeft') setOpen(i=> i>0? i-1 : i);
+      if(e.key==='ArrowRight') setOpen(i=> i<items.length-1? i+1 : i);
+    };
+    window.addEventListener('keydown', onKey);
+    return ()=> window.removeEventListener('keydown', onKey);
+  },[open,items.length]);
+
+  return (
+  <div className="relative" aria-labelledby="past-highlight-heading">
+      <div className="relative rounded-4xl overflow-hidden ring-1 ring-brand-300/60 bg-gradient-to-br from-white via-brand-50 to-brand-100 shadow-[0_6px_28px_-10px_rgba(40,70,90,0.25)] md:flex group">
+        {/* Image mosaic / gallery preview */}
+  <div className="md:w-1/2 p-6 md:p-8 grid grid-cols-3 grid-rows-2 gap-2 content-start min-h-[340px] bg-gradient-to-b from-brand-50/60 via-white/40 to-brand-100/40">
+          {loading && <div className="col-span-3 h-40 flex items-center justify-center text-[12px] text-brand-700/50">이미지 로딩중…</div>}
+          {error && <div className="col-span-3 h-40 flex items-center justify-center text-[12px] text-red-600/70">불러오기 실패</div>}
+          {!loading && !error && !items.length && <div className="col-span-3 h-40 flex items-center justify-center text-[12px] text-brand-700/50">이미지 없음</div>}
+          {!!items.length && items.slice(0,6).map((it,idx)=> (
+            <button key={it.public_id} onClick={()=> setOpen(idx)} className="relative group aspect-[4/5] rounded-xl overflow-hidden ring-1 ring-brand-200/60 bg-white/40 focus:outline-none">
+              <img src={transform(it.secure_url,'f_auto,q_auto,c_fill,w_400')} alt={it.public_id} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-70 transition-opacity" />
+            </button>
+          ))}
+        </div>
+        {/* Textual info */}
+        <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6">
+          <header id="past-highlight-heading" className="space-y-4">
+            <div className="flex flex-wrap gap-2 items-center text-[11px] tracking-wide font-semibold">
+              <span className="px-3 py-1 rounded-full bg-brand-100 text-brand-700">HIGHLIGHT</span>
+              <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">GEORGE DOVAS</span>
+              <span className="px-3 py-1 rounded-full bg-white/70 ring-1 ring-brand-200 text-brand-700">2025 JULY</span>
+              <span className="px-3 py-1 rounded-full bg-white/60 ring-1 ring-brand-300 text-brand-600">PAST</span>
+            </div>
+            <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">George Dovas 워크숍 하이라이트</h3>
+            <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">2025년 7월 진행된 워크숍의 일부 현장 모습입니다. 전체 사진은 갤러리 전용 보기에서 더 탐색할 수 있습니다.</p>
+          </header>
+          <div className="flex flex-wrap gap-4 pt-2">
+            <a href="/gallery?mode=georgedovas" className="inline-flex items-center gap-1.5 rounded-full bg-brand-700 text-white px-6 py-3 text-[13px] font-medium shadow hover:bg-brand-600 transition">전체 갤러리 보기</a>
+          </div>
+          <p className="text-[11px] text-brand-600/60">※ 사진 구성은 갤러리 업데이트에 따라 순차 변동될 수 있습니다.</p>
+        </div>
+        <div className="absolute inset-0 pointer-events-none rounded-4xl ring-1 ring-brand-300/0 group-hover:ring-brand-400/70 transition" />
+      </div>
+      {open>=0 && items[open] && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=> setOpen(-1)} role="dialog" aria-modal="true" aria-label="워크숍 이미지 확대 보기">
+          <button className="absolute top-4 right-4 text-white text-3xl leading-none" onClick={e=> { e.stopPropagation(); setOpen(-1); }} aria-label="닫기">×</button>
+          <button className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white text-4xl" onClick={e=> { e.stopPropagation(); setOpen(i=> i>0? i-1 : i); }} aria-label="이전">‹</button>
+          <img src={transform(items[open].secure_url,'f_auto,q_auto,w_1600')} alt={items[open].public_id} className="max-w-[92vw] max-h-[88vh] rounded shadow-xl" onClick={e=> e.stopPropagation()} />
+          <button className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white text-4xl" onClick={e=> { e.stopPropagation(); setOpen(i=> i<items.length-1? i+1 : i); }} aria-label="다음">›</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PastTimeline({className=''}){
+  const years = Object.keys(pastWorkshops).sort((a,b)=> b.localeCompare(a));
+  return (
+    <div className={"relative "+className}>
+      <div className="mb-10 flex items-center gap-3">
+        <h4 className="text-xl font-semibold tracking-tight text-brand-800">연도별 기록</h4>
+        <div className="h-px flex-1 bg-gradient-to-r from-brand-200/70 via-brand-200/30 to-transparent" />
+      </div>
+      <div className="grid md:grid-cols-3 gap-10 text-[13px] text-brand-800/80">
+        {years.map(year => {
+          const filtered = pastWorkshops[year].filter(item => !/George Dovas/i.test(item));
+          if(!filtered.length) return null;
+          return (
+            <div key={year} className="relative pl-4 before:absolute before:left-0 before:top-1 before:bottom-1 before:w-px before:bg-gradient-to-b from-brand-400/60 to-brand-200/20">
+              <h5 className="font-semibold text-brand-700 mb-3 flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-400" />{year}</h5>
+              <ul className="space-y-2">
+                {filtered.map((item,i)=> <li key={i}>{item}</li>)}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

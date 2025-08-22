@@ -39,6 +39,36 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+// Folder tree & counts (debug helper)
+app.get('/api/gallery/tree', async (_req, res) => {
+  try {
+    // Grab broad gallery scope (include nested) — adjust max_results as needed.
+    const search = await cloudinary.search
+      .expression('resource_type:image AND (folder="gallery" OR folder="gallery/*")')
+      .sort_by('created_at','desc')
+      .max_results(500)
+      .execute();
+    const resources = search.resources || [];
+    const map = new Map();
+    for (const r of resources) {
+      const pid = r.public_id || '';
+      const parts = pid.split('/');
+      if (parts.length >= 2) {
+        const folderPath = parts.slice(0, parts.length - 1).join('/');
+        map.set(folderPath, (map.get(folderPath) || 0) + 1);
+      } else {
+        map.set('(root)', (map.get('(root)') || 0) + 1);
+      }
+    }
+    const tree = Array.from(map.entries())
+      .map(([path,count]) => ({ path, count }))
+      .sort((a,b)=> a.path.localeCompare(b.path));
+    res.json({ total: resources.length, folders: tree });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || 'tree_error' });
+  }
+});
+
 // 갤러리 목록 (태그/폴더 병합)
 app.get('/api/gallery', async (req, res) => {
   // Explicitly disable caching for this dynamic endpoint
@@ -49,6 +79,14 @@ app.get('/api/gallery', async (req, res) => {
   });
   try {
     const folderQuery = req.query.folder;
+    const wantDebug = String(req.query.debug||'').toLowerCase() === '1';
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '<unset>';
+    const debugLogs = [];
+    const logSearch = (label, expr) => {
+      const line = `[cloudinary:search] ${label} -> POST https://api.cloudinary.com/v1_1/${cloudName}/resources/search expr=${expr}`;
+      debugLogs.push(line);
+      try { console.log(line); } catch {}
+    };
 
     // helper to extract a folder label from public_id like "Namaste_Yoga/GeorgeDovas/image"
     // returns the last folder segment (e.g. 'GeorgeDovas') when possible
@@ -62,30 +100,55 @@ app.get('/api/gallery', async (req, res) => {
 
     let resources = [];
 
-    if (folderQuery) {
-      // Use public_id prefix matching which reliably targets subfolders
-      const prefixes = new Set([folderQuery]);
-      if (!folderQuery.startsWith('gallery/')) prefixes.add(`gallery/${folderQuery}`);
-      if (folderQuery.startsWith('gallery/')) prefixes.add(folderQuery.replace(/^gallery\//, ''));
+  if (folderQuery) {
+      // Normalize candidate folder/public_id prefixes
+      const base = folderQuery.replace(/^\/+/, '').replace(/\/+$/, '');
+      const candidates = new Set([base]);
+      if (!base.startsWith('gallery/')) candidates.add(`gallery/${base}`);
+      // also add stripped form if already had gallery/
+      if (base.startsWith('gallery/')) candidates.add(base.replace(/^gallery\//,''));
 
-      const orParts = Array.from(prefixes).map(p => `public_id:"${p}/*"`);
-      const expr = `resource_type:image AND (${orParts.join(' OR ')})`;
-      const byFolder = await cloudinary.search
-        .expression(expr)
-        .sort_by('created_at', 'desc')
-        .max_results(200)
-        .execute();
+      // Build OR expressions using folder= (exact) and public_id prefix fallback
+      const exprParts = [];
+      for (const c of candidates) {
+        exprParts.push(`folder="${c}"`);
+        exprParts.push(`folder="${c}/*"`); // nested safety
+        exprParts.push(`public_id:${c}/*`); // public_id prefix style
+      }
+      const expr = `resource_type:image AND (${exprParts.join(' OR ')})`;
+      logSearch('folderQuery', expr);
+      let byFolder;
+      try {
+        byFolder = await cloudinary.search
+          .expression(expr)
+          .sort_by('created_at', 'desc')
+          .max_results(200)
+          .execute();
+      } catch (e) {
+        console.error('[gallery] primary folder search failed, retry simple folder=', base, e?.message);
+        const fallbackExpr = `resource_type:image AND folder="${base}"`;
+        logSearch('folderQuery-fallback', fallbackExpr);
+        byFolder = await cloudinary.search
+          .expression(fallbackExpr)
+          .sort_by('created_at','desc')
+          .max_results(200)
+          .execute();
+      }
       resources = (byFolder.resources || []);
     } else {
       // default behaviour: merge tagged items and everything under gallery/*
+      const exprTag = 'resource_type:image AND tags="iyck_gallery"';
+      logSearch('default-tag', exprTag);
       const byTag = await cloudinary.search
-        .expression('resource_type:image AND tags="iyck_gallery"')
+        .expression(exprTag)
         .sort_by('created_at', 'desc')
         .max_results(100)
         .execute();
 
+      const exprFolder = 'resource_type:image AND (folder="gallery" OR folder="gallery/*")';
+      logSearch('default-folder', exprFolder);
       const byFolder = await cloudinary.search
-        .expression('resource_type:image AND (folder="gallery" OR folder="gallery/*")')
+        .expression(exprFolder)
         .sort_by('created_at', 'desc')
         .max_results(100)
         .execute();
@@ -98,21 +161,23 @@ app.get('/api/gallery', async (req, res) => {
         .sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
     }
 
-    res.json({
-      items: resources.map(r => {
-        const parts = (r.public_id || '').split('/');
-        const folder_label = parts.length >= 2 ? parts[parts.length - 2] : null; // short
-        const folder_path = parts.length >= 2 ? parts.slice(0, parts.length - 1).join('/') : null; // full path
-        return {
-          public_id: r.public_id,
-          format: r.format,
-          secure_url: r.secure_url,
-          created_at: r.created_at,
-          folder: folder_label,
-          folder_path,
-        };
-      })
+    const items = resources.map(r => {
+      const parts = (r.public_id || '').split('/');
+      const folder_label = parts.length >= 2 ? parts[parts.length - 2] : null; // short
+      const folder_path = parts.length >= 2 ? parts.slice(0, parts.length - 1).join('/') : null; // full path
+      return {
+        public_id: r.public_id,
+        format: r.format,
+        secure_url: r.secure_url,
+        created_at: r.created_at,
+        folder: folder_label,
+        folder_path,
+      };
     });
+    if (wantDebug) {
+      return res.json({ items, debug: debugLogs });
+    }
+    res.json({ items });
   } catch (e) {
     const status = e?.http_code || e?.status || 500;
     const msg = e?.message || 'cloudinary_error';

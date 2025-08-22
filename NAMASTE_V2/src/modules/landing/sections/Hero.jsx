@@ -4,7 +4,7 @@ export default function Hero(){
       id="hero"
       role="banner"
       aria-label="메인 히어로 – 깊은 호흡 고요한 정렬"
-      className="relative h-screen min-h-[680px] w-full flex items-center overflow-hidden bg-[linear-gradient(125deg,#1f3f51,#285166,#32657f)]"
+      className="relative min-h-[85vh] min-h-[640px] md:min-h-[720px] w-full flex items-center overflow-hidden bg-[linear-gradient(120deg,#1f3f51,#285166,#32657f)] pt-24 md:pt-0"
     >
       {/* Decorative backgrounds */}
       <div aria-hidden="true" className="absolute inset-0">
@@ -21,7 +21,7 @@ export default function Hero(){
         />
       </div>
       <div className="relative container-beam">
-        <div className="max-w-2xl pt-8 md:pt-0">
+        <div className="max-w-2xl pt-4 md:pt-0">
           <h1 className="font-serif text-5xl md:text-6xl font-semibold leading-tight tracking-tight text-brand-50 mb-8 drop-shadow-[0_8px_18px_rgba(10,24,16,0.55)]">
             깊은 호흡, 고요한 정렬
           </h1>
@@ -44,11 +44,17 @@ export default function Hero(){
             >
               협회 소개
             </a>
+            <a
+              href="#faq"
+              className="px-8 py-3 rounded-full bg-gradient-to-r from-brand-200/80 via-brand-300/80 to-brand-200/80 hover:from-brand-200 hover:via-brand-300 hover:to-brand-200 text-brand-800 text-sm font-semibold tracking-wide shadow-[0_4px_14px_-4px_rgba(31,63,81,0.35)] backdrop-blur-sm border border-brand-400/30 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-300"
+            >
+              WHY?
+            </a>
           </nav>
         </div>
       </div>
       {/* Scroll hint */}
-  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center text-[11px] tracking-wider text-brand-100/70" aria-hidden="true">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center text-[11px] tracking-wider text-brand-100/70" aria-hidden="true">
         <span className="mb-2">SCROLL</span>
         <div className="w-[1px] h-10 bg-gradient-to-b from-brand-100/60 to-brand-100/0 animate-pulse" />
       </div>

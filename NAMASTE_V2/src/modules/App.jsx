@@ -4,6 +4,7 @@ import IYCKPage from './iyengar/IYCK.jsx';
 import GurujiPage from './iyengar/Guruji.jsx';
 import WhatIyengarPage from './iyengar/What.jsx';
 import ProgramsIndex from './programs/ProgramsIndex.jsx';
+import GalleryPage from './gallery/GalleryPage.jsx';
 import TeachersPage from './iyengar/Teachers.jsx';
 import FAQPage from './faq/FAQPage.jsx';
 
@@ -21,6 +22,7 @@ export default function App(){
   <Route path="/programs" element={<ProgramsIndex />} />
   <Route path="/teachers" element={<TeachersPage />} />
   <Route path="/faq" element={<FAQPage />} />
+  <Route path="/gallery" element={<GalleryPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import useScrollReveal from '../hooks/useScrollReveal.js';
+import Section from '../components/Section.jsx';
+import { featuredWorkshop } from '../../programs/data/programsData.js';
 
 export default function Programs(){
   const ref = useScrollReveal();
 
-  // Countdown to the featured workshop start (assume 2025-09-12 local)
-  const target = new Date('2025-09-12T09:30:00+09:00');
+  // Countdown based on featured workshop data
+  const target = new Date(featuredWorkshop.startDate);
   const [countdown, setCountdown] = useState({ d:0,h:0,m:0 });
   useEffect(()=>{
     const tick = () => {
@@ -23,11 +25,11 @@ export default function Programs(){
   },[]);
 
   return (
-    <section
+    <Section
       id="programs"
       ref={ref}
-      aria-labelledby="programs-heading"
-  className="relative -mt-2 pt-14 pb-28 md:pt-16 md:pb-32 bg-gradient-to-b from-white via-gray-50 to-white will-change-transform"
+      ariaLabelledby="programs-heading"
+      className="relative pt-14 md:pt-20 bg-gradient-to-b from-white via-gray-50 to-white will-change-transform"
     >
   <div aria-hidden="true" className="absolute top-0 inset-x-0 h-10 bg-gradient-to-b from-brand-200/20 via-white/30 to-transparent pointer-events-none" />
       {/* subtle decorative background */}
@@ -58,7 +60,7 @@ export default function Programs(){
         </div>
 
         {/* Featured Workshop */}
-        <article aria-labelledby="featured-workshop-title" className="mb-24" role="article">
+  <article aria-labelledby="featured-workshop-title" className="mb-24" role="article">
           <div className="relative rounded-3xl overflow-hidden ring-1 ring-brand-200/70 bg-white shadow-soft-lg md:flex group">
             {/* Image panel */}
             <div className="md:w-1/2 relative h-72 md:h-auto">
@@ -80,19 +82,20 @@ export default function Programs(){
             {/* Content panel */}
             <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6" aria-describedby="featured-workshop-meta">
               <header className="space-y-4">
-                <h3 id="featured-workshop-title" className="font-serif text-[1.75rem] md:text-3xl font-semibold tracking-tight text-brand-800">Eyal Shifroni 선생님 9월 워크숍</h3>
-                <p className="text-[14px] md:text-[15px] leading-relaxed text-gray-700">첫 공식 한국 방문. Iyengar Yoga의 깊이 있는 정렬·프롭·티칭 접근을 3일 집중 구조로 체험합니다.</p>
+                <h3 id="featured-workshop-title" className="font-serif text-[1.75rem] md:text-3xl font-semibold tracking-tight text-brand-800">{featuredWorkshop.title}</h3>
+                <p className="text-[14px] md:text-[15px] leading-relaxed text-gray-700">{featuredWorkshop.summary}</p>
               </header>
               <div id="featured-workshop-meta" className="grid sm:grid-cols-2 gap-6 text-[13px] leading-relaxed">
                 <ul className="space-y-2 text-gray-700">
-                  <li><strong className="text-brand-700">일정:</strong> 9월 12–14 (총 15시간)</li>
-                  <li><strong className="text-brand-700">세션:</strong> 9/12 14:00–17:00 · 9/13~14 09:30–12:30 & 14:30–16:30</li>
-                  <li><strong className="text-brand-700">장소:</strong> 공간 920 (강남 역삼로9길 20 B1)</li>
+                  <li><strong className="text-brand-700">세션1:</strong> {featuredWorkshop.sessions[0]}</li>
+                  <li><strong className="text-brand-700">세션2:</strong> {featuredWorkshop.sessions[1]}</li>
+                  <li><strong className="text-brand-700">총시간:</strong> {featuredWorkshop.totalHours}시간</li>
+                  <li><strong className="text-brand-700">장소:</strong> {featuredWorkshop.location}</li>
                 </ul>
                 <ul className="space-y-2 text-gray-700">
-                  <li><strong className="text-brand-700">수강료:</strong> 429,000원 (VAT 포함)</li>
-                  <li><strong className="text-brand-700">문의:</strong> 김명규 · 홍윤서 · 김아람</li>
-                  <li><strong className="text-brand-700">이메일:</strong> iyengaryogacommunitykorea@gmail.com</li>
+                  <li><strong className="text-brand-700">수강료:</strong> {featuredWorkshop.tuition}</li>
+                  <li><strong className="text-brand-700">문의:</strong> {featuredWorkshop.contacts}</li>
+                  <li><strong className="text-brand-700">이메일:</strong> {featuredWorkshop.email}</li>
                 </ul>
               </div>
               <div className="flex flex-wrap gap-4 pt-2">
@@ -106,6 +109,6 @@ export default function Programs(){
         </article>
 
       </div>
-    </section>
+    </Section>
   );
 }

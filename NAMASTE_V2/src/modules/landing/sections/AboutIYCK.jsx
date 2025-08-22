@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import useScrollReveal from '../hooks/useScrollReveal.js';
+import Section from '../components/Section.jsx';
 
 // About IYCK teaser with motion-respect & accessibility improvements
 export default function AboutIYCK(){
@@ -13,16 +14,16 @@ export default function AboutIYCK(){
     return ()=>clearInterval(t);
   },[]);
   return (
-    <section
+    <Section
       id="about"
       ref={ref}
-      aria-labelledby="about-iyck-heading"
-      className="relative py-32 md:py-36 overflow-hidden"
+      ariaLabelledby="about-iyck-heading"
+      className="relative overflow-hidden"
     >
       {/* background aesthetics */}
       <div className="absolute inset-0 -z-20 bg-gradient-to-b from-white via-gray-50 to-white" aria-hidden="true" />
       <div className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(circle_at_55%_45%,black,transparent_78%)] bg-[radial-gradient(circle_at_28%_32%,rgba(86,141,168,0.18),transparent_60%),radial-gradient(circle_at_74%_68%,rgba(50,101,127,0.14),transparent_62%)]" aria-hidden="true" />
-      <div className="container-beam grid lg:grid-cols-2 gap-20 items-center">
+  <div className="container-beam grid lg:grid-cols-2 gap-20 items-center">
         {/* Visual*/}
         <div className="relative order-last lg:order-first">
             <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-brand-200/40 via-white to-accent-200/30 blur-xl" aria-hidden="true" />
@@ -64,7 +65,7 @@ export default function AboutIYCK(){
           </ul>
         </div>
       </div>
-  <div className="h-px w-full mt-8 bg-gradient-to-r from-transparent via-brand-200/60 to-transparent" />
-    </section>
+      <div className="divider-soft mt-6" />
+    </Section>
   );
 }
