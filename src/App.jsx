@@ -11,6 +11,7 @@ import CIYT from './pages/iyengar/CIYT';
 import FAQ from './pages/FAQ';
 import Workshops from './pages/programs/Workshops';
 import Gallery from "./pages/Gallery";
+import GalleryTest from "./pages/debug/GalleryTest";
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="faq" element={<FAQ />} />
           <Route path="programs/workshops" element={<Workshops />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/gallery-test" element={<GalleryTest />} />
         </Route>
       </Routes>
     </Router>

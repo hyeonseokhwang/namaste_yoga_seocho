@@ -5,6 +5,8 @@ import cors from 'cors';
 import { v2 as cloudinary } from 'cloudinary';
 
 const app = express();
+// Disable implicit ETag generation to avoid 304 reuse with dynamic queries
+app.set('etag', false);
 
 // CORS: 개발 단계에선 넓게 허용
 app.use(cors({
@@ -38,34 +40,78 @@ app.get('/api/health', (_req, res) => {
 });
 
 // 갤러리 목록 (태그/폴더 병합)
-app.get('/api/gallery', async (_req, res) => {
+app.get('/api/gallery', async (req, res) => {
+  // Explicitly disable caching for this dynamic endpoint
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  });
   try {
-    const byTag = await cloudinary.search
-      .expression('resource_type:image AND tags="iyck_gallery"')
-      .sort_by('created_at', 'desc')
-      .max_results(100)
-      .execute();
+    const folderQuery = req.query.folder;
 
-    const byFolder = await cloudinary.search
-      .expression('resource_type:image AND (folder="gallery" OR folder="gallery/*")')
-      .sort_by('created_at', 'desc')
-      .max_results(100)
-      .execute();
+    // helper to extract a folder label from public_id like "Namaste_Yoga/GeorgeDovas/image"
+    // returns the last folder segment (e.g. 'GeorgeDovas') when possible
+    const getFolderFromPublicId = (pid) => {
+      try {
+        const parts = pid.split('/');
+        if (parts.length >= 2) return parts[parts.length - 2];
+      } catch (e) {}
+      return null;
+    };
 
-    const map = new Map();
-    [...(byTag.resources||[]), ...(byFolder.resources||[])]
-      .forEach(r => map.set(r.public_id, r));
+    let resources = [];
 
-    const resources = Array.from(map.values())
-      .sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+    if (folderQuery) {
+      // Use public_id prefix matching which reliably targets subfolders
+      const prefixes = new Set([folderQuery]);
+      if (!folderQuery.startsWith('gallery/')) prefixes.add(`gallery/${folderQuery}`);
+      if (folderQuery.startsWith('gallery/')) prefixes.add(folderQuery.replace(/^gallery\//, ''));
+
+      const orParts = Array.from(prefixes).map(p => `public_id:"${p}/*"`);
+      const expr = `resource_type:image AND (${orParts.join(' OR ')})`;
+      const byFolder = await cloudinary.search
+        .expression(expr)
+        .sort_by('created_at', 'desc')
+        .max_results(200)
+        .execute();
+      resources = (byFolder.resources || []);
+    } else {
+      // default behaviour: merge tagged items and everything under gallery/*
+      const byTag = await cloudinary.search
+        .expression('resource_type:image AND tags="iyck_gallery"')
+        .sort_by('created_at', 'desc')
+        .max_results(100)
+        .execute();
+
+      const byFolder = await cloudinary.search
+        .expression('resource_type:image AND (folder="gallery" OR folder="gallery/*")')
+        .sort_by('created_at', 'desc')
+        .max_results(100)
+        .execute();
+
+      const map = new Map();
+      [...(byTag.resources||[]), ...(byFolder.resources||[])]
+        .forEach(r => map.set(r.public_id, r));
+
+      resources = Array.from(map.values())
+        .sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+    }
 
     res.json({
-      items: resources.map(r => ({
-        public_id: r.public_id,
-        format: r.format,
-        secure_url: r.secure_url,
-        created_at: r.created_at
-      }))
+      items: resources.map(r => {
+        const parts = (r.public_id || '').split('/');
+        const folder_label = parts.length >= 2 ? parts[parts.length - 2] : null; // short
+        const folder_path = parts.length >= 2 ? parts.slice(0, parts.length - 1).join('/') : null; // full path
+        return {
+          public_id: r.public_id,
+          format: r.format,
+          secure_url: r.secure_url,
+          created_at: r.created_at,
+          folder: folder_label,
+          folder_path,
+        };
+      })
     });
   } catch (e) {
     const status = e?.http_code || e?.status || 500;

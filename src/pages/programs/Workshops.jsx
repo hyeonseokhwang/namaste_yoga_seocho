@@ -1,6 +1,7 @@
 // src/pages/programs/Workshops.jsx
 
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Workshops() {
   return (
@@ -97,7 +98,15 @@ export default function Workshops() {
             <div>
               <h4 className="font-semibold text-lg">2025</h4>
               <ul className="list-disc list-inside mt-2">
-                <li><strong>2025년 7월 19–20일</strong> — George Dovas 선생님 워크숍 (서울)</li>
+                <li>
+                  <strong>2025년 7월 19–20일</strong> — George Dovas 선생님 워크숍 (서울)
+                  <Link
+                    to="/gallery?folder=gallery/Namaste_Yoga/GeorgeDovas"
+                    className="ml-2 inline-block text-xs px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 hover:bg-indigo-200 align-middle"
+                  >
+                    사진 보기
+                  </Link>
+                </li>
               </ul>
             </div>
 
