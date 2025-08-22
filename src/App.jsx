@@ -24,6 +24,8 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="iyengar/what" element={<What />} />
+    {/* Alias for direct /what access */}
+    <Route path="what" element={<What />} />
           <Route path="iyengar/guruji" element={<Guruji />} />
           <Route path="iyengar/iyck" element={<IYCK />} />
           <Route path="iyengar/ciyt" element={<CIYT />} />

@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import BlurImage from '../../shared/ui/BlurImage.jsx';
+import useFocusTrap from '../../shared/hooks/useFocusTrap.js';
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 if(!CLOUD_NAME){
@@ -168,7 +170,18 @@ export default function GalleryList({ initialFolder='all', hideFilters=false, om
           {displayed.map((img,idx)=>(
             <div key={img.public_id} className="group relative">
               <button onClick={()=> setOpenIdx(idx)} className="block w-full focus:outline-none" title={img.public_id}>
-                <img src={thumb(img.public_id, img.format, img.secure_url)} alt={img.public_id} loading="lazy" className="w-full h-44 sm:h-48 object-cover rounded-lg shadow-sm group-hover:opacity-90" />
+                {/* 4:3 aspect ratio placeholder for CLS stability */}
+                <div style={{aspectRatio:'4/3'}} className="w-full rounded-lg overflow-hidden bg-neutral-100">
+                  <img
+                    src={thumb(img.public_id, img.format, img.secure_url)}
+                    alt={img.public_id}
+                    loading="lazy"
+                    decoding="async"
+                    width="400"
+                    height="300"
+                    className="w-full h-full object-cover object-center rounded-lg shadow-sm group-hover:opacity-90 transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                </div>
               </button>
               <button onClick={()=> handleDelete(img)} className="absolute top-1.5 right-1.5 hidden group-hover:flex items-center justify-center h-7 w-7 rounded-full bg-black/70 text-white text-sm" title="삭제">×</button>
             </div>
@@ -176,14 +189,40 @@ export default function GalleryList({ initialFolder='all', hideFilters=false, om
         </div>
       )}
       {openIdx >=0 && displayed[openIdx] && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[1000] p-4" onClick={close}>
-          <button className="absolute top-4 left-4 text-white text-xs bg-red-600/80 hover:bg-red-600 px-3 py-1 rounded" onClick={e=> { e.stopPropagation(); handleDelete(displayed[openIdx]); }}>삭제</button>
-          <button className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white text-3xl" onClick={e=> { e.stopPropagation(); prev(); }}>‹</button>
-          <img src={large(displayed[openIdx].public_id, displayed[openIdx].format, displayed[openIdx].secure_url)} alt={displayed[openIdx].public_id} className="max-h-[88vh] max-w-[92vw] rounded shadow-lg" onClick={e=> e.stopPropagation()} />
-          <button className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white text-3xl" onClick={e=> { e.stopPropagation(); next(); }}>›</button>
-          <button className="absolute top-4 right-4 text-white text-3xl" onClick={e=> { e.stopPropagation(); close(); }}>×</button>
-        </div>
+        <LightboxGallery
+          img={displayed[openIdx]}
+          onDelete={()=> handleDelete(displayed[openIdx])}
+          onPrev={prev}
+          onNext={next}
+          onClose={close}
+          canPrev={openIdx>0}
+          canNext={openIdx<displayed.length-1}
+          src={large(displayed[openIdx].public_id, displayed[openIdx].format, displayed[openIdx].secure_url)}
+        />
       )}
+    </div>
+  );
+}
+
+function LightboxGallery({ img, src, onClose, onPrev, onNext, onDelete, canPrev, canNext }){
+  const ref = useRef(null);
+  useFocusTrap(ref, true);
+  return (
+    <div ref={ref} className="fixed inset-0 bg-black/80 backdrop-blur-sm flex flex-col z-[1100]" role="dialog" aria-modal="true" aria-label="갤러리 이미지 보기">
+      <div className="flex items-center justify-between px-6 py-3 text-white text-xs">
+        <span className="truncate max-w-[50vw] opacity-80">{img.public_id}</span>
+        <div className="flex gap-2">
+          <button onClick={onDelete} className="px-3 py-1 rounded bg-red-600/80 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400/70">삭제</button>
+          <button onClick={onClose} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/60">닫기</button>
+        </div>
+      </div>
+      <div className="relative flex-1" onClick={onClose}>
+        {canPrev && <button onClick={(e)=> { e.stopPropagation(); onPrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-3xl" aria-label="이전">‹</button>}
+        {canNext && <button onClick={(e)=> { e.stopPropagation(); onNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-3xl" aria-label="다음">›</button>}
+        <div className="absolute inset-0 flex items-center justify-center p-4" onClick={e=> e.stopPropagation()}>
+          <img src={src} alt="갤러리 이미지" className="max-w-[92vw] max-h-[88vh] rounded shadow-xl" loading="lazy" decoding="async" />
+        </div>
+      </div>
     </div>
   );
 }

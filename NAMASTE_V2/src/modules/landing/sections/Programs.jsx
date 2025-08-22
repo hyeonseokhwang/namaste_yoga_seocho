@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import useScrollReveal from '../hooks/useScrollReveal.js';
 import Section from '../components/Section.jsx';
+import SectionHeading from '../../shared/ui/SectionHeading.jsx';
+import Button from '../../shared/ui/Button.jsx';
 import { featuredWorkshop } from '../../programs/data/programsData.js';
+import { useI18n } from '../../shared/i18n/I18nProvider.jsx';
 
 export default function Programs(){
+  const { t, dict, lang } = useI18n();
   const ref = useScrollReveal();
 
   // Countdown based on featured workshop data
@@ -37,25 +41,26 @@ export default function Programs(){
       <div className="container-beam relative">
         {/* Section Intro */}
   <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-10 mb-10 md:mb-12">
-          <div className="max-w-xl space-y-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-100 text-[11px] font-semibold tracking-wide text-brand-700 ring-1 ring-brand-200/70">PROGRAMS</div>
-            <h2 id="programs-heading" className="font-serif text-3xl md:text-[2.5rem] leading-[1.15] font-semibold tracking-tight text-gray-900">Upcoming Focus</h2>
-            <p className="text-gray-600 text-sm md:text-[15px] leading-relaxed">정확한 아사나와 의식적 호흡을 심화하는 집중 프로그램. 소규모 진행으로 개별 조정과 세밀한 피드백을 제공합니다.</p>
+          <div className="max-w-xl">
+            <SectionHeading
+              id="programs-heading"
+              eyebrow={t('programsPreview.eyebrow')}
+              title={t('programsPreview.title')}
+              desc={t('programsPreview.desc')}
+            />
           </div>
           <div className="flex flex-col items-start gap-4 md:items-end">
             {/* Filter / category nav (non-interactive placeholder for now) */}
             <nav aria-label="Program categories" className="w-full md:w-auto">
               <ul className="flex flex-wrap gap-2 text-[12px] font-medium">
-                {['워크숍','테라퓨틱','호흡','개인세션(예정)'].map(cat=> (
+                {dict.programsPreview.categories.map(cat=> (
                   <li key={cat}>
                     <button type="button" className="px-4 py-2 rounded-full bg-white border border-brand-200/70 hover:bg-brand-50 text-brand-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 transition">{cat}</button>
                   </li>
                 ))}
               </ul>
             </nav>
-            <a href="/programs#upcoming" className="inline-flex items-center gap-2 text-sm rounded-full bg-brand-600 text-white px-5 py-2.5 font-medium shadow-soft-lg hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-600/70 transition">
-              전체 일정 보기
-            </a>
+            <Button as="a" href="/programs#upcoming" size="sm">{t('programsPreview.allSchedule')}</Button>
           </div>
         </div>
 
@@ -69,12 +74,12 @@ export default function Programs(){
               <img src="/img/class/KakaoTalk_20250818_091833656_01.jpg" alt="워크숍 수련 장면 (정렬 지도)" className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 transition-opacity duration-700" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-tr from-black/45 via-black/0 to-black/0 pointer-events-none" />
               <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                <span className="px-3 py-1 rounded-full bg-brand-100/90 backdrop-blur text-[11px] font-semibold tracking-wide text-brand-700">FEATURED</span>
-                <span className="px-3 py-1 rounded-full bg-white/85 backdrop-blur text-[11px] font-medium tracking-wide text-brand-800">WORKSHOP</span>
+                <span className="px-3 py-1 rounded-full bg-brand-100/90 backdrop-blur text-[11px] font-semibold tracking-wide text-brand-700">{t('programsPreview.featured')}</span>
+                <span className="px-3 py-1 rounded-full bg-white/85 backdrop-blur text-[11px] font-medium tracking-wide text-brand-800">{t('programsPreview.workshop')}</span>
               </div>
               { (countdown.d+countdown.h+countdown.m) > 0 && (
                 <div className="absolute bottom-4 left-4 flex items-center gap-2 text-[11px] font-semibold tracking-wide bg-brand-700/80 text-white px-3 py-1.5 rounded-full backdrop-blur shadow">
-                  <span className="opacity-80">개최까지</span>
+                  <span className="opacity-80">{t('programsPreview.countdown')}</span>
                   <span className="tabular-nums">{countdown.d}d {countdown.h}h {countdown.m}m</span>
                 </div>
               ) }
@@ -86,23 +91,23 @@ export default function Programs(){
                 <p className="text-[14px] md:text-[15px] leading-relaxed text-gray-700">{featuredWorkshop.summary}</p>
               </header>
               <div id="featured-workshop-meta" className="grid sm:grid-cols-2 gap-6 text-[13px] leading-relaxed">
-                <ul className="space-y-2 text-gray-700">
-                  <li><strong className="text-brand-700">세션1:</strong> {featuredWorkshop.sessions[0]}</li>
-                  <li><strong className="text-brand-700">세션2:</strong> {featuredWorkshop.sessions[1]}</li>
-                  <li><strong className="text-brand-700">총시간:</strong> {featuredWorkshop.totalHours}시간</li>
-                  <li><strong className="text-brand-700">장소:</strong> {featuredWorkshop.location}</li>
+                <ul className="space-y-2 text-gray-700" lang={lang}>
+                  <li><strong className="text-brand-700">{t('programsPreview.session1')}:</strong> {featuredWorkshop.sessions[0]}</li>
+                  <li><strong className="text-brand-700">{t('programsPreview.session2')}:</strong> {featuredWorkshop.sessions[1]}</li>
+                  <li><strong className="text-brand-700">{t('programsPreview.totalHours')}:</strong> {featuredWorkshop.totalHours}{lang==='ko'? '시간':''}</li>
+                  <li><strong className="text-brand-700">{t('programsPreview.location')}:</strong> {featuredWorkshop.location}</li>
                 </ul>
-                <ul className="space-y-2 text-gray-700">
-                  <li><strong className="text-brand-700">수강료:</strong> {featuredWorkshop.tuition}</li>
-                  <li><strong className="text-brand-700">문의:</strong> {featuredWorkshop.contacts}</li>
-                  <li><strong className="text-brand-700">이메일:</strong> {featuredWorkshop.email}</li>
+                <ul className="space-y-2 text-gray-700" lang={lang}>
+                  <li><strong className="text-brand-700">{t('programsPreview.tuition')}:</strong> {featuredWorkshop.tuition}</li>
+                  <li><strong className="text-brand-700">{t('programsPreview.contact')}:</strong> {featuredWorkshop.contacts}</li>
+                  <li><strong className="text-brand-700">{t('programsPreview.email')}:</strong> {featuredWorkshop.email}</li>
                 </ul>
               </div>
               <div className="flex flex-wrap gap-4 pt-2">
-                <a href="/programs#upcoming" className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 text-white px-6 py-3 text-[13px] font-medium shadow-soft-lg hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-600/70 transition">상세 / 신청 안내 →</a>
-                <a href="/gallery?folder=gallery/Namaste_Yoga/GeorgeDovas" className="inline-flex items-center gap-1.5 rounded-full bg-white ring-1 ring-brand-200/70 text-brand-700 px-6 py-3 text-[13px] font-medium hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300/60 transition">지난 워크숍 사진</a>
+                <Button as="a" href="/programs#upcoming" size="md">{t('programsPreview.details')}</Button>
+                <Button as="a" href="/gallery?folder=gallery/Namaste_Yoga/GeorgeDovas" variant="subtle" size="md">{t('programsPreview.pastPhotos')}</Button>
               </div>
-              <p className="text-[11px] text-gray-400">※ 일정/구성은 상황에 따라 일부 조정될 수 있습니다.</p>
+              <p className="text-[11px] text-gray-400" lang={lang}>{t('programsPreview.disclaimer')}</p>
             </div>
             <div className="absolute inset-0 pointer-events-none rounded-3xl ring-1 ring-black/0 group-hover:ring-brand-300/60 transition" />
           </div>

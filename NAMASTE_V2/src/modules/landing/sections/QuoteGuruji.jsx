@@ -1,5 +1,6 @@
 import useScrollReveal from '../hooks/useScrollReveal.js';
 import Section from '../components/Section.jsx';
+import Button from '../../shared/ui/Button.jsx';
 
 export default function QuoteGuruji(){
   const ref = useScrollReveal();
@@ -42,12 +43,7 @@ export default function QuoteGuruji(){
             </blockquote>
       <figcaption className="text-sm tracking-wide text-brand-600">— B.K.S. Iyengar, <em>Light on Life</em></figcaption>
             <div className="pt-4">
-              <a
-                href="/guruji"
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium tracking-wide bg-brand-700 hover:bg-brand-600 text-white shadow-[0_2px_8px_-2px_rgba(0,0,0,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-50 transition"
-              >
-                구루지 소개 페이지 →
-              </a>
+              <Button as="a" href="/guruji" size="sm">구루지 소개 페이지 →</Button>
             </div>
           </figure>
         </div>

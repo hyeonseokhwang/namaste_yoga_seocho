@@ -1,9 +1,14 @@
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import NavBar from '../landing/components/NavBar.jsx';
 import Footer from '../landing/sections/Footer.jsx';
 import GalleryList from './components/GalleryList.jsx';
 import GalleryUpload from './components/GalleryUpload.jsx';
+import Meta from '../shared/seo/Meta.jsx';
+import { buildSeo } from '../shared/seo/seoUtils.js';
+import { useI18n } from '../shared/i18n/I18nProvider.jsx';
+import useFocusTrap from '../shared/hooks/useFocusTrap.js';
+import BlurImage from '../shared/ui/BlurImage.jsx';
 
 const GEORGE_FOLDER = 'gallery/Namaste_Yoga/GeorgeDovas';
 
@@ -13,6 +18,9 @@ function transform(url, opts='f_auto,q_auto,c_fill,w_600'){
 }
 
 export default function GalleryPage(){
+  const { lang, dict } = useI18n();
+  const { hreflangs, canonical } = buildSeo('/gallery');
+  const g = dict.galleryPage;
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
@@ -66,20 +74,27 @@ export default function GalleryPage(){
 
   return (
     <>
+      <Meta
+        title={`${g.title} | IYCK`}
+        description={g.desc}
+  lang={lang}
+  hreflangs={hreflangs}
+        canonical={canonical(lang)}
+      />
       <div id="top" />
       <NavBar />
       <main className="min-h-screen bg-gradient-to-b from-brand-50 to-neutral-50 pt-28 pb-24">
         <div className="container-beam max-w-7xl">
         <header className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
-            <h1 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-brand-800 mb-4">Practice Gallery</h1>
-            <p className="text-sm text-neutral-700/80 leading-relaxed max-w-xl">워크숍 · 클래스 · 수련 순간들을 아카이브합니다. 아래 버튼으로 전체 / George Dovas 워크숍 전용 보기 전환.</p>
+            <h1 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-brand-800 mb-4" lang={lang}>{g.title}</h1>
+            <p className="text-sm text-neutral-700/80 leading-relaxed max-w-xl" lang={lang}>{g.desc}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <button type="button" onClick={()=> setMode('all')} className={`${activeBtn} ${mode==='all'? 'bg-brand-700 text-white hover:bg-brand-600' : 'bg-neutral-200 text-neutral-800 hover:bg-neutral-300'}`}>전체 보기</button>
-              <button type="button" onClick={()=> setMode('georgedovas')} className={`${activeBtn} ${mode==='georgedovas'? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-neutral-200 text-neutral-800 hover:bg-neutral-300'}`}>George Dovas 워크숍</button>
+              <button type="button" onClick={()=> setMode('all')} className={`${activeBtn} ${mode==='all'? 'bg-brand-700 text-white hover:bg-brand-600' : 'bg-neutral-200 text-neutral-800 hover:bg-neutral-300'}`}>{g.all}</button>
+              <button type="button" onClick={()=> setMode('georgedovas')} className={`${activeBtn} ${mode==='georgedovas'? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-neutral-200 text-neutral-800 hover:bg-neutral-300'}`}>{g.george}</button>
             </div>
           </div>
-          <Link to="/programs" className="self-start md:self-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-700 hover:bg-brand-600 text-white text-sm font-medium shadow-soft-lg transition">프로그램 보기 →</Link>
+          <Link to="/programs" className="self-start md:self-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-700 hover:bg-brand-600 text-white text-sm font-medium shadow-soft-lg transition">{g.goPrograms}</Link>
         </header>
 
         {mode==='all' && (
@@ -93,16 +108,16 @@ export default function GalleryPage(){
 
         {mode==='georgedovas' && (
           <div>
-            {gdLoading && <div className="py-16 text-center text-sm text-neutral-500">불러오는 중…</div>}
-            {gdError && <div className="mb-6 p-4 rounded bg-red-50 border border-red-200 text-sm text-red-700">불러오기 실패: {gdError}</div>}
+            {gdLoading && <div className="py-16 text-center text-sm text-neutral-500" lang={lang}>{g.loading}</div>}
+            {gdError && <div className="mb-6 p-4 rounded bg-red-50 border border-red-200 text-sm text-red-700" lang={lang}>{g.fail}: {gdError}</div>}
             {!gdLoading && !gdError && !gdItems.length && (
-              <div className="py-16 text-center text-neutral-500 text-sm">해당 폴더에서 jpg 이미지를 찾지 못했습니다.</div>
+              <div className="py-16 text-center text-neutral-500 text-sm" lang={lang}>{g.none}</div>
             )}
             {!!gdItems.length && (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 {gdItems.map((it,idx)=> (
-                  <button key={it.public_id} className="group relative block focus:outline-none" onClick={()=> setOpen(idx)} title={it.public_id}>
-                    <img src={transform(it.secure_url)} alt={it.public_id} loading="lazy" className="w-full h-40 object-cover rounded-lg shadow-sm group-hover:opacity-90" />
+                  <button key={it.public_id} className="group relative block focus:outline-none" onClick={()=> setOpen(idx)} title={it.public_id} aria-label={g.enlarge}>
+                    <BlurImage src={transform(it.secure_url)} alt="워크숍 사진" aspect="aspect-[4/3]" className="w-full" imgClassName="w-full h-full object-cover rounded-lg shadow-sm group-hover:opacity-90" loading="lazy" />
                   </button>
                 ))}
               </div>
@@ -111,15 +126,41 @@ export default function GalleryPage(){
         )}
         </div>
         {mode==='georgedovas' && open>=0 && gdItems[open] && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[1000] p-4" onClick={()=> setOpen(-1)}>
-          <button className="absolute top-4 left-4 text-white text-xs bg-red-600/80 hover:bg-red-600 px-3 py-1 rounded" onClick={e=> { e.stopPropagation(); setOpen(-1); }}>닫기</button>
-          <button className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white text-3xl" onClick={e=> { e.stopPropagation(); setOpen(i=> i>0? i-1 : i); }}>‹</button>
-          <img src={transform(gdItems[open].secure_url,'f_auto,q_auto,w_1600')} alt={gdItems[open].public_id} className="max-h-[88vh] max-w-[92vw] rounded shadow-lg" onClick={e=> e.stopPropagation()} />
-          <button className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white text-3xl" onClick={e=> { e.stopPropagation(); setOpen(i=> i<gdItems.length-1? i+1 : i); }}>›</button>
-        </div>
+          <GeorgeLightbox items={gdItems} index={open} setIndex={setOpen} onClose={()=> setOpen(-1)} />
         )}
       </main>
       <div id="contact"><Footer /></div>
     </>
   );
+}
+
+function GeorgeLightbox({ items, index, setIndex, onClose }){
+  const { dict, lang } = useI18n();
+  const g = dict.galleryPage;
+  const ref = useFocusTrapRef();
+  useFocusTrap(ref, true);
+  return (
+    <div ref={ref} className="fixed inset-0 bg-black/80 backdrop-blur-sm flex flex-col z-[1000]" role="dialog" aria-modal="true" aria-label={g.lightbox}>
+      <div className="flex items-center justify-between px-6 py-3 text-white text-xs">
+        <span className="opacity-80">{index+1} / {items.length}</span>
+        <div className="flex gap-2">
+          <button onClick={()=> setIndex(i=> (i-1+items.length)%items.length)} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50">Prev</button>
+          <button onClick={()=> setIndex(i=> (i+1)%items.length)} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50">Next</button>
+          <button onClick={onClose} className="px-3 py-1 rounded bg-red-600/80 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400/70">{g.close}</button>
+        </div>
+      </div>
+      <div className="relative flex-1" onClick={onClose}>
+        <div className="absolute inset-0 flex items-center justify-center p-4" onClick={e=> e.stopPropagation()}>
+          {items.map((it,i)=> (
+            <img key={it.public_id} src={transform(it.secure_url,'f_auto,q_auto,w_1600')} alt="워크숍 사진" className={`max-h-full max-w-full object-contain transition-opacity duration-700 ${i===index? 'opacity-100':'opacity-0 absolute'}`} loading="lazy" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function useFocusTrapRef(){
+  const r = useRef(null); // use local hook, avoids needing React import
+  return r;
 }

@@ -1,12 +1,49 @@
 import NavBar from '../landing/components/NavBar.jsx';
 import Footer from '../landing/sections/Footer.jsx';
 import useScrollReveal from '../landing/hooks/useScrollReveal.js';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { featuredWorkshop, pastWorkshops } from './data/programsData.js';
+import Meta from '../shared/seo/Meta.jsx';
+import { buildSeo, getGlobalSchemas } from '../shared/seo/seoUtils.js';
+import { useI18n } from '../shared/i18n/I18nProvider.jsx';
+import BlurImage from '../shared/ui/BlurImage.jsx';
+import useFocusTrap from '../shared/hooks/useFocusTrap.js';
 
 export default function ProgramsIndex(){
+  const { lang, dict } = useI18n();
+  const { hreflangs, canonical } = buildSeo('/programs');
+  const pg = dict.programsPage;
   return (
     <>
+      <Meta
+        title={lang==='ko'? `프로그램 | ${featuredWorkshop.title}` : `Programs | ${featuredWorkshop.title}`}
+        description={featuredWorkshop.summary}
+  lang={lang}
+  hreflangs={hreflangs}
+        canonical={canonical(lang)}
+        structuredData={[
+          ...getGlobalSchemas(),
+          {
+            '@context':'https://schema.org',
+            '@type':'Event',
+            name: featuredWorkshop.title,
+            startDate: featuredWorkshop.startDate,
+            eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+            eventStatus: 'https://schema.org/EventScheduled',
+            location: {
+              '@type':'Place',
+              name: featuredWorkshop.location,
+              address: featuredWorkshop.location
+            },
+            image: featuredWorkshop.images,
+            description: featuredWorkshop.summary,
+            organizer: {
+              '@type':'Organization',
+              name: 'Iyengar Yoga Community Korea'
+            }
+          }
+        ]}
+      />
       <div id="top" />
       <NavBar />
       <Hero />
@@ -17,6 +54,8 @@ export default function ProgramsIndex(){
 }
 
 function Hero(){
+  const { dict, lang } = useI18n();
+  const pg = dict.programsPage;
   const ref = useScrollReveal();
   return (
   <header ref={ref} className="relative overflow-hidden pt-40 pb-20">
@@ -24,13 +63,13 @@ function Hero(){
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_25%_35%,rgba(86,141,168,0.22),transparent_60%),radial-gradient(circle_at_80%_65%,rgba(50,101,127,0.18),transparent_60%)]" />
       <div className="container-beam max-w-5xl grid md:grid-cols-12 gap-12 items-start">
         <div className="md:col-span-7">
-          <h1 className="font-serif text-4xl md:text-5xl font-semibold tracking-tight text-brand-800">프로그램 안내</h1>
-          <p className="mt-6 text-[15px] md:text-base leading-relaxed text-brand-800/80 max-w-xl">워크숍 · 공개 수업 · 교사 연수 · 커뮤니티 모임을 통해 Iyengar Yoga의 깊이를 단계적으로 체험합니다. 구조화된 학습과 공동체 경험을 연결합니다.</p>
+          <h1 className="font-serif text-4xl md:text-5xl font-semibold tracking-tight text-brand-800" lang={lang}>{pg.heroTitle}</h1>
+          <p className="mt-6 text-[15px] md:text-base leading-relaxed text-brand-800/80 max-w-xl" lang={lang}>{pg.heroDesc}</p>
           <div className="mt-10 grid sm:grid-cols-2 gap-5 max-w-2xl">
-            <ProgramTypeCard icon="compass" title="정기 워크숍" desc="주제·정렬·호흡·시퀀스 집중 심화" />
-            <ProgramTypeCard icon="leaf" title="공개 수업" desc="첫 체험 & 기본 원리 안내" />
-            <ProgramTypeCard icon="cap" title="교사 연수" desc="멘토링·티칭 스킬·평가 대비" />
-            <ProgramTypeCard icon="hands" title="커뮤니티 모임" desc="사례 공유 · 질의 · 회복 수련" />
+            <ProgramTypeCard icon="compass" title={pg.types.workshop[0]} desc={pg.types.workshop[1]} />
+            <ProgramTypeCard icon="leaf" title={pg.types.intro[0]} desc={pg.types.intro[1]} />
+            <ProgramTypeCard icon="cap" title={pg.types.teacher[0]} desc={pg.types.teacher[1]} />
+            <ProgramTypeCard icon="hands" title={pg.types.community[0]} desc={pg.types.community[1]} />
           </div>
         </div>
         <div className="md:col-span-5 flex flex-col gap-5">
@@ -44,6 +83,8 @@ function Hero(){
 }
 
 function ProgramsOverview(){
+  const { dict, lang } = useI18n();
+  const pg = dict.programsPage;
   return (
     <main className="bg-gradient-to-b from-brand-50 via-white to-brand-50/60 pb-44 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_70%,rgba(86,141,168,0.18),transparent_65%),radial-gradient(circle_at_85%_25%,rgba(50,101,127,0.16),transparent_60%)]" />
@@ -51,7 +92,7 @@ function ProgramsOverview(){
         {/* Featured Upcoming */}
   <section id="upcoming" className="pt-4">
           <div className="mb-10">
-            <h3 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-brand-800">진행중 / 예정</h3>
+            <h3 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-brand-800" lang={lang}>{pg.upcoming}</h3>
           </div>
           <div className="relative rounded-4xl overflow-hidden ring-1 ring-brand-300/60 bg-gradient-to-br from-white via-brand-50 to-brand-100 shadow-[0_6px_28px_-8px_rgba(40,70,90,0.25)] md:flex group">
             <FeaturedImages />
@@ -63,22 +104,22 @@ function ProgramsOverview(){
               </header>
               <div className="grid sm:grid-cols-2 gap-6 text-[13px] leading-relaxed">
                 <ul className="space-y-2 text-brand-800/80">
-                  <li><strong className="text-brand-700">세션1:</strong> {featuredWorkshop.sessions[0]}</li>
-                  <li><strong className="text-brand-700">세션2:</strong> {featuredWorkshop.sessions[1]}</li>
-                  <li><strong className="text-brand-700">총시간:</strong> {featuredWorkshop.totalHours}시간</li>
-                  <li><strong className="text-brand-700">장소:</strong> {featuredWorkshop.location}</li>
+                  <li><strong className="text-brand-700">{pg.session1}:</strong> {featuredWorkshop.sessions[0]}</li>
+                  <li><strong className="text-brand-700">{pg.session2}:</strong> {featuredWorkshop.sessions[1]}</li>
+                  <li><strong className="text-brand-700">{pg.totalHours}:</strong> {featuredWorkshop.totalHours}{lang==='ko'? '시간':''}</li>
+                  <li><strong className="text-brand-700">{pg.location}:</strong> {featuredWorkshop.location}</li>
                 </ul>
                 <ul className="space-y-2 text-brand-800/80">
-                  <li><strong className="text-brand-700">수강료:</strong> {featuredWorkshop.tuition}</li>
-                  <li><strong className="text-brand-700">문의:</strong> {featuredWorkshop.contacts}</li>
-                  <li><strong className="text-brand-700">이메일:</strong> {featuredWorkshop.email}</li>
-                  <li><strong className="text-brand-700">포커스:</strong> {featuredWorkshop.focus}</li>
+                  <li><strong className="text-brand-700">{pg.tuition}:</strong> {featuredWorkshop.tuition}</li>
+                  <li><strong className="text-brand-700">{pg.contact}:</strong> {featuredWorkshop.contacts}</li>
+                  <li><strong className="text-brand-700">{pg.email}:</strong> {featuredWorkshop.email}</li>
+                  <li><strong className="text-brand-700">{pg.focus}:</strong> {featuredWorkshop.focus}</li>
                 </ul>
               </div>
               <div className="flex flex-wrap gap-4 pt-2">
-                <a href="#register" className="inline-flex items-center gap-1.5 rounded-full bg-brand-700 text-white px-6 py-3 text-[13px] font-medium shadow hover:bg-brand-600 transition">Register</a>
+                <a href="#register" className="inline-flex items-center gap-1.5 rounded-full bg-brand-700 text-white px-6 py-3 text-[13px] font-medium shadow hover:bg-brand-600 transition">{pg.register}</a>
               </div>
-              <p className="text-[11px] text-brand-600/60">※ 시간/구성은 상황에 따라 일부 조정될 수 있습니다.</p>
+              <p className="text-[11px] text-brand-600/60" lang={lang}>{pg.disclaimer}</p>
             </div>
             <div className="absolute inset-0 pointer-events-none rounded-4xl ring-1 ring-brand-300/0 group-hover:ring-brand-400/70 transition" />
           </div>
@@ -163,7 +204,7 @@ function resolveIcon(name){
 function HeroThumb({img, label}){
   return (
     <div className="relative group rounded-xl overflow-hidden ring-1 ring-brand-200/60 bg-white/30 backdrop-blur">
-      <img src={img} alt={label} loading="lazy" className="h-40 w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.05]" />
+  <img src={img} alt={label} loading="lazy" decoding="async" width="640" height="320" className="h-40 w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.05]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
       <div className="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 leading-snug drop-shadow-sm">{label}</div>
     </div>
@@ -172,10 +213,12 @@ function HeroThumb({img, label}){
 
 // Unified Past Section
 function PastSection(){
+  const { dict, lang } = useI18n();
+  const pg = dict.programsPage;
   return (
     <section id="past" className="mt-40">
       <div className="mb-14 flex items-center gap-4">
-        <h3 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-brand-800">지난 워크숍</h3>
+  <h3 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-brand-800" lang={lang}>{pg.pastHeading}</h3>
         <div className="h-px flex-1 bg-gradient-to-r from-brand-300/70 via-brand-200/40 to-transparent" />
       </div>
       <PastHighlightCard />
@@ -201,9 +244,15 @@ function FeaturedImages(){
   return (
     <div className="md:w-1/2 relative h-72 md:h-auto flex flex-col">
       <button onClick={()=>setOpen(true)} className="relative flex-1 text-left cursor-zoom-in">
-        {images.map((im,i)=> (
-          <img key={im.src} src={im.src} alt={im.alt} loading="lazy"
-               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i===index? 'opacity-100':'opacity-0'}`} />
+    {images.map((im,i)=> (
+          <BlurImage
+            key={im.src}
+            src={im.src}
+            alt={im.alt}
+            className="absolute inset-0"
+            imgClassName={`w-full h-full object-cover transition-opacity duration-700 ${i===index? 'opacity-100':'opacity-0'}`}
+            loading="lazy"
+          />
         ))}
         <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-black/5 to-transparent pointer-events-none" />
         <div className="absolute top-4 left-4 flex flex-wrap gap-2">
@@ -215,38 +264,20 @@ function FeaturedImages(){
         {images.map((im,i)=>(
           <button key={im.src} onClick={()=>setIndex(i)} aria-label={`이미지 ${i+1}`}
                   className={`relative overflow-hidden rounded-lg ring-1 ${i===index? 'ring-brand-400':'ring-brand-200'} w-16 h-12 transition`}>
-            <img src={im.src} alt="thumb" className="w-full h-full object-cover" />
+            <img src={im.src} alt="" className="w-full h-full object-cover" />
             <div className={`absolute inset-0 bg-black/40 ${i===index? 'opacity-0':'opacity-30'} hover:opacity-0 transition-opacity`} />
           </button>
         ))}
       </div>
-      {open && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-black/85 backdrop-blur-sm">
-          <div className="flex justify-between items-center px-6 py-4 text-white text-sm tracking-wide select-none">
-            <span className="truncate pr-4">{images[index].alt}</span>
-            <div className="flex items-center gap-2">
-              <button onClick={()=>setIndex((index-1+images.length)%images.length)} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">Prev</button>
-              <button onClick={()=>setIndex((index+1)%images.length)} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">Next</button>
-              <button onClick={()=>setOpen(false)} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">Close</button>
-            </div>
-          </div>
-          <div className="relative flex-1">
-            <button onClick={()=>setOpen(false)} aria-label="닫기" className="absolute inset-0 w-full h-full cursor-zoom-out" />
-            <div className="absolute inset-0 flex items-center justify-center p-4" onClick={e=>e.stopPropagation()}>
-              {images.map((im,i)=> (
-                <img key={im.src} src={im.src} alt={im.alt}
-                     className={`max-h-full max-w-full object-contain transition-opacity duration-700 ${i===index? 'opacity-100':'opacity-0 absolute'}`} />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+  {open && <Lightbox images={images} index={index} setIndex={setIndex} onClose={()=> setOpen(false)} />}
     </div>
   );
 }
 
 // Past workshop highlight card with integrated gallery preview & lightbox
 function PastHighlightCard(){
+  const { dict, lang } = useI18n();
+  const pg = dict.programsPage;
   const folder = 'gallery/Namaste_Yoga/GeorgeDovas';
   const [items,setItems] = useState([]);
   const [loading,setLoading] = useState(true);
@@ -292,48 +323,43 @@ function PastHighlightCard(){
           {!loading && !error && !items.length && <div className="col-span-3 h-40 flex items-center justify-center text-[12px] text-brand-700/50">이미지 없음</div>}
           {!!items.length && items.slice(0,6).map((it,idx)=> (
             <button key={it.public_id} onClick={()=> setOpen(idx)} className="relative group aspect-[4/5] rounded-xl overflow-hidden ring-1 ring-brand-200/60 bg-white/40 focus:outline-none">
-              <img src={transform(it.secure_url,'f_auto,q_auto,c_fill,w_400')} alt={it.public_id} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
+              <img src={transform(it.secure_url,'f_auto,q_auto,c_fill,w_400')} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-70 transition-opacity" />
             </button>
           ))}
         </div>
         {/* Textual info */}
         <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6">
-          <header id="past-highlight-heading" className="space-y-4">
+          <header id="past-highlight-heading" className="space-y-4" lang={lang}>
             <div className="flex flex-wrap gap-2 items-center text-[11px] tracking-wide font-semibold">
               <span className="px-3 py-1 rounded-full bg-brand-100 text-brand-700">HIGHLIGHT</span>
               <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">GEORGE DOVAS</span>
               <span className="px-3 py-1 rounded-full bg-white/70 ring-1 ring-brand-200 text-brand-700">2025 JULY</span>
               <span className="px-3 py-1 rounded-full bg-white/60 ring-1 ring-brand-300 text-brand-600">PAST</span>
             </div>
-            <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">George Dovas 워크숍 하이라이트</h3>
-            <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">2025년 7월 진행된 워크숍의 일부 현장 모습입니다. 전체 사진은 갤러리 전용 보기에서 더 탐색할 수 있습니다.</p>
+            <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">George Dovas {pg.highlight}</h3>
+            <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">{pg.highlightDesc}</p>
           </header>
           <div className="flex flex-wrap gap-4 pt-2">
-            <a href="/gallery?mode=georgedovas" className="inline-flex items-center gap-1.5 rounded-full bg-brand-700 text-white px-6 py-3 text-[13px] font-medium shadow hover:bg-brand-600 transition">전체 갤러리 보기</a>
+            <a href="/gallery?mode=georgedovas" className="inline-flex items-center gap-1.5 rounded-full bg-brand-700 text-white px-6 py-3 text-[13px] font-medium shadow hover:bg-brand-600 transition">{pg.viewAllGallery}</a>
           </div>
-          <p className="text-[11px] text-brand-600/60">※ 사진 구성은 갤러리 업데이트에 따라 순차 변동될 수 있습니다.</p>
+          <p className="text-[11px] text-brand-600/60">{pg.highlightNote}</p>
         </div>
         <div className="absolute inset-0 pointer-events-none rounded-4xl ring-1 ring-brand-300/0 group-hover:ring-brand-400/70 transition" />
       </div>
-      {open>=0 && items[open] && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=> setOpen(-1)} role="dialog" aria-modal="true" aria-label="워크숍 이미지 확대 보기">
-          <button className="absolute top-4 right-4 text-white text-3xl leading-none" onClick={e=> { e.stopPropagation(); setOpen(-1); }} aria-label="닫기">×</button>
-          <button className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white text-4xl" onClick={e=> { e.stopPropagation(); setOpen(i=> i>0? i-1 : i); }} aria-label="이전">‹</button>
-          <img src={transform(items[open].secure_url,'f_auto,q_auto,w_1600')} alt={items[open].public_id} className="max-w-[92vw] max-h-[88vh] rounded shadow-xl" onClick={e=> e.stopPropagation()} />
-          <button className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white text-4xl" onClick={e=> { e.stopPropagation(); setOpen(i=> i<items.length-1? i+1 : i); }} aria-label="다음">›</button>
-        </div>
-      )}
+  {open>=0 && items[open] && <Lightbox dynamic images={items.map(it=> ({src:transform(it.secure_url,'f_auto,q_auto,w_1600'), alt:'워크숍 사진'}))} index={open} setIndex={setOpen} onClose={()=> setOpen(-1)} />}
     </div>
   );
 }
 
 function PastTimeline({className=''}){
+  const { dict, lang } = useI18n();
+  const pg = dict.programsPage;
   const years = Object.keys(pastWorkshops).sort((a,b)=> b.localeCompare(a));
   return (
     <div className={"relative "+className}>
       <div className="mb-10 flex items-center gap-3">
-        <h4 className="text-xl font-semibold tracking-tight text-brand-800">연도별 기록</h4>
+        <h4 className="text-xl font-semibold tracking-tight text-brand-800" lang={lang}>{pg.years}</h4>
         <div className="h-px flex-1 bg-gradient-to-r from-brand-200/70 via-brand-200/30 to-transparent" />
       </div>
       <div className="grid md:grid-cols-3 gap-10 text-[13px] text-brand-800/80">
@@ -349,6 +375,41 @@ function PastTimeline({className=''}){
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+// Accessible Lightbox reusable
+function Lightbox({ images, index, setIndex, onClose, dynamic=false }){
+  const ref = useRef(null);
+  useFocusTrap(ref, true);
+  useEffect(()=>{
+    function onKey(e){
+      if(e.key==='Escape'){ onClose(); }
+      if(e.key==='ArrowLeft'){ setIndex(i=> (i-1+images.length)%images.length); }
+      if(e.key==='ArrowRight'){ setIndex(i=> (i+1)%images.length); }
+    }
+    document.addEventListener('keydown', onKey);
+    return ()=> document.removeEventListener('keydown', onKey);
+  },[images.length,onClose,setIndex]);
+  return (
+    <div ref={ref} className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-sm flex flex-col" role="dialog" aria-modal="true" aria-label="이미지 상세 보기">
+      <div className="flex items-center justify-between px-6 py-4 text-white text-xs tracking-wide">
+        <span className="opacity-80">{index+1} / {images.length}</span>
+        <div className="flex items-center gap-2">
+          <button onClick={()=> setIndex(i=> (i-1+images.length)%images.length)} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/60">Prev</button>
+          <button onClick={()=> setIndex(i=> (i+1)%images.length)} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/60">Next</button>
+          <button onClick={onClose} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/60" autoFocus>Close</button>
+        </div>
+      </div>
+      <div className="relative flex-1" onClick={onClose}>
+        <div className="absolute inset-0 flex items-center justify-center p-4" onClick={e=> e.stopPropagation()}>
+          {images.map((im,i)=> (
+            <img key={im.src} src={im.src} alt={im.alt} width={dynamic? undefined:1200} height={dynamic? undefined:800}
+                 className={`max-h-full max-w-full object-contain transition-opacity duration-700 ${i===index? 'opacity-100':'opacity-0 absolute'}`} />
+          ))}
+        </div>
       </div>
     </div>
   );

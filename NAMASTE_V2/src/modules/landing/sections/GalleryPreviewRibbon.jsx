@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import useScrollReveal from '../hooks/useScrollReveal.js';
 import Section from '../components/Section.jsx';
+import SectionHeading from '../../shared/ui/SectionHeading.jsx';
+import Button from '../../shared/ui/Button.jsx';
+import { useI18n } from '../../shared/i18n/I18nProvider.jsx';
 
 export default function GalleryPreviewRibbon(){
+  const { t } = useI18n();
   const ref = useScrollReveal();
   const [items,setItems]=useState([]);
   const [reduce,setReduce] = useState(false);
@@ -22,14 +26,14 @@ export default function GalleryPreviewRibbon(){
   <Section ref={ref} variant="tight" className="relative bg-brand-900 py-16 overflow-hidden will-change-transform">
   <div className="absolute inset-0 opacity-[0.18] bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.15),transparent_65%)]" />
       <div className="container-beam relative mb-10 flex items-center justify-between">
-  <h2 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-50">Practice Gallery</h2>
-  <a href="/gallery" className="text-xs px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-brand-50 backdrop-blur border border-white/15 transition">전체 보기</a>
+        <h2 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-50">{t('galleryRibbon.title')}</h2>
+        <Button as="a" href="/gallery" size="sm" variant="ghost" className="bg-white/10 hover:bg-white/20 text-brand-50 border border-white/15">{t('galleryRibbon.viewAll')}</Button>
       </div>
       <div className="w-full [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <div className={`flex gap-4 px-4 ${reduce? '' : 'animate-[ribbon-scroll_55s_linear_infinite]'}`} aria-live="off">
           {doubled.map((r,i)=> (
             <div key={(r.public_id || r.secure_url || 'img') + i} className="relative h-40 w-64 flex-shrink-0 overflow-hidden rounded-xl bg-gray-800/40 ring-1 ring-white/5">
-              <img src={r.secure_url || `/img/practice${(i%3)+1}.jpg`} alt="practice" loading="lazy" className="h-full w-full object-cover opacity-80 hover:opacity-100 transition" />
+              <img src={r.secure_url || `/img/practice${(i%3)+1}.jpg`} alt={t('galleryRibbon.alt')} loading="lazy" className="h-full w-full object-cover opacity-80 hover:opacity-100 transition" />
             </div>
           ))}
         </div>

@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>IYCK • Iyengar Yoga Korea Center</title>
     <meta name="description" content="정확성 · 안정성 · 의식적 호흡. 아이엥가 요가 서울 센터." />
-    <meta name="theme-color" content="#2f7a52" />
+  <meta name="theme-color" content="#1f3f51" />
+  <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="preload" as="image" href="/img/bkskofibphoto.jpg" imagesrcset="/img/bkskofibphoto.jpg 1280w, /img/bks2.jpg 1920w" imagesizes="(max-width: 900px) 100vw, 100vw" />
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"Organization","name":"Iyengar Yoga Community Korea","url":"https://iyck.or.kr","logo":"/img/bkskofibphoto.jpg","sameAs":["https://www.instagram.com/iyengar_namaste_yoga_studio"]}
@@ -18,5 +19,12 @@
   <body class="antialiased bg-white text-gray-800">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if('serviceWorker' in navigator){
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(e=>console.warn('SW reg failed', e));
+        });
+      }
+    </script>
   </body>
 </html>

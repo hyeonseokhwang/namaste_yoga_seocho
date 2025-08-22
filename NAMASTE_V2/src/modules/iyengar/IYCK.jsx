@@ -3,23 +3,42 @@ import useScrollReveal from '../landing/hooks/useScrollReveal.js';
 import useActiveSection from '../shared/hooks/useActiveSection.js';
 import NavBar from '../landing/components/NavBar.jsx';
 import Footer from '../landing/sections/Footer.jsx';
+import { useI18n } from '../shared/i18n/I18nProvider.jsx';
+import Meta from '../shared/seo/Meta.jsx';
+import { buildSeo, getGlobalSchemas } from '../shared/seo/seoUtils.js';
 
 // IYCK 소개 전체 페이지 (레거시 콘텐츠 통합 + 향상된 구조)
 export default function IYCKPage(){
+  const { dict, lang } = useI18n();
+  const d = dict.iyckPage;
+  const { origin, base, hreflangs, canonical } = buildSeo('/iyck');
+  const breadcrumb = {
+    '@context':'https://schema.org',
+    '@type':'BreadcrumbList',
+    itemListElement:[
+  { '@type':'ListItem', position:1, name: lang==='ko'? '홈':'Home', item: origin + '/?lang='+lang },
+      { '@type':'ListItem', position:2, name: d.title, item: base + '?lang='+lang }
+    ]
+  };
   return (
     <>
+  <Meta title={d.title + ' | IYCK'} description={d.intro} lang={lang} hreflangs={hreflangs} structuredData={[...getGlobalSchemas(), breadcrumb]} canonical={canonical(lang)} />
       <div id="top" />
       <NavBar />
-      <PageLayout
-        title="IYCK 소개"
-        intro="Iyengar Yoga 철학과 전통을 기반으로 한국에서 정확하고 깊이 있는 수련 문화를 구축하고 수련자와 교사 모두의 성장 구조를 설계하는 비영리 단체입니다."
-        sections={sections}
-      >
+      <PageLayout title={d.title} intro={d.intro} sections={localizedSections(d)}>
         <ArticleBody />
       </PageLayout>
       <div id="contact"><Footer /></div>
     </>
   );
+}
+
+function localizedSections(d){
+  return [
+    { id:'legacy-about', title:d.sections.about },
+    { id:'legacy-org', title:d.sections.org },
+    { id:'gallery', title:d.sections.gallery }
+  ];
 }
 
 function PageLayout({ title, intro, sections, children }){
@@ -36,6 +55,8 @@ function PageLayout({ title, intro, sections, children }){
 
 function HeaderHero({title,intro}){
   const ref = useScrollReveal();
+  const { dict } = useI18n();
+  const d = dict.iyckPage;
   return (
     <section ref={ref} className="relative overflow-hidden">
       {/* Background decorative layers */}
@@ -54,13 +75,8 @@ function HeaderHero({title,intro}){
 
         {/* Quick facts / badges */}
         <ul className="mt-10 flex flex-wrap justify-center gap-3 text-[11px] font-medium tracking-wide">
-          {[
-            ['2019 시작','bg-brand-50 text-brand-700 ring-brand-200'],
-            ['2024 비영리 등록','bg-white text-brand-800 ring-brand-300'],
-            ['Pune 규범 준수','bg-accent-50 text-accent-700 ring-accent-200'],
-            ['Community Driven','bg-white text-brand-700 ring-brand-200']
-          ].map(([label,cls])=> (
-            <li key={label} className={`px-3.5 py-2 rounded-full ring-1 shadow-sm ${cls}`}>{label}</li>
+          {d.badges.map(label=> (
+            <li key={label} className="px-3.5 py-2 rounded-full ring-1 shadow-sm bg-white text-brand-700 ring-brand-200">{label}</li>
           ))}
         </ul>
 
@@ -68,29 +84,36 @@ function HeaderHero({title,intro}){
         <div className="mt-14 relative w-full max-w-5xl">
           <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-tr from-brand-200/50 via-white to-accent-200/40 blur-xl opacity-70" aria-hidden="true" />
           <figure className="relative rounded-3xl overflow-hidden ring-1 ring-brand-200/60 shadow-[0_8px_28px_-6px_rgba(16,38,49,0.25),0_4px_16px_-4px_rgba(16,38,49,0.18)] group">
-            <img src="https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_1600/gallery/agvcwzezxscgxilbae1l.jpg" alt="IYCK 메인" className="w-full h-[340px] md:h-[440px] object-cover brightness-[1.02] group-hover:scale-[1.02] transition-transform duration-[2200ms] ease-[cubic-bezier(.19,1,.22,1)]" />
+            {/* aspect ratio box for CLS stability (1600x900 ~16:9) */}
+            <div className="w-full" style={{aspectRatio:'16/9'}}>
+              <img src="https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_1600/gallery/agvcwzezxscgxilbae1l.jpg" alt="IYCK 메인" width="1600" height="900" className="w-full h-full object-cover brightness-[1.02] group-hover:scale-[1.02] transition-transform duration-[2200ms] ease-[cubic-bezier(.19,1,.22,1)]" loading="lazy" decoding="async" />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-white/10 to-transparent" />
           </figure>
           {/* Floating small thumbnails */}
           <div className="hidden md:block">
             <div className="absolute -right-10 top-10 w-40 rounded-xl overflow-hidden ring-1 ring-white/70 shadow-lg backdrop-blur bg-white/60">
-              <img src="https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_800/gallery/apdkin9yf01kfvilhuas.jpg" alt="practice" className="w-full h-full object-cover" />
+              <div style={{aspectRatio:'4/5'}} className="w-full">
+                <img src="https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_800/gallery/apdkin9yf01kfvilhuas.jpg" alt="practice" width="800" height="1000" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+              </div>
             </div>
             <div className="absolute -left-10 bottom-10 w-44 rounded-xl overflow-hidden ring-1 ring-white/70 shadow-lg backdrop-blur bg-white/60">
-              <img src="https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_800/gallery/nbpmx95s4rrrvpmhopj5.jpg" alt="practice" className="w-full h-full object-cover" />
+              <div style={{aspectRatio:'4/5'}} className="w-full">
+                <img src="https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_800/gallery/nbpmx95s4rrrvpmhopj5.jpg" alt="practice" width="800" height="1000" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+              </div>
             </div>
           </div>
         </div>
 
         {/* CTAs */}
         <div className="mt-14 flex flex-wrap items-center justify-center gap-4">
-          <a href="#legacy-about" className="px-7 py-3.5 rounded-full bg-brand-600 text-white text-sm font-medium hover:bg-brand-500 shadow-soft-lg">소개 바로가기</a>
-          <a href="#legacy-org" className="px-7 py-3.5 rounded-full bg-white border border-brand-200 text-brand-700 text-sm font-medium hover:bg-brand-50">조직 구성</a>
+          <a href="#legacy-about" className="px-7 py-3.5 rounded-full bg-brand-600 text-white text-sm font-medium hover:bg-brand-500 shadow-soft-lg">{d.ctaAbout}</a>
+          <a href="#legacy-org" className="px-7 py-3.5 rounded-full bg-white border border-brand-200 text-brand-700 text-sm font-medium hover:bg-brand-50">{d.ctaOrg}</a>
         </div>
         <div className="mt-16 animate-bounce-slow" aria-hidden="true">
           <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.15em] text-gray-400">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></svg>
-            Scroll
+            {d.scroll}
           </span>
         </div>
       </div>
@@ -101,13 +124,11 @@ function HeaderHero({title,intro}){
   );
 }
 
-const sections = [
-  { id:'legacy-about', title:'소개' },
-  { id:'legacy-org', title:'조직 구성' },
-  { id:'gallery', title:'갤러리' },
-];
+// sections localized dynamically
 
 function ArticleBody(){
+  const { dict } = useI18n();
+  const d = dict.iyckPage;
   // 이미지 (샘플) - 갤러리 최소 유지
   const images = [
     'https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_1600/gallery/agvcwzezxscgxilbae1l.jpg', // 메인
@@ -134,18 +155,14 @@ function ArticleBody(){
         <p>IYCK는 단순한 요가 단체를 넘어, 몸과 마음의 조화, 진심 어린 자기 탐구, 그리고 함께 성장하는 수련 공동체를 지향합니다. B.K.S. Iyengar 구루지의 가르침이 지닌 깊이와 진정성을 온전히 보존하고 전수하기 위해, 푸네의 라마마니 아엥가 요가연구소(RIMYI)에서 정립한<em> ‘Iyengar Yoga 규범(Pune Constitution)’</em>에 따라 운영되고 있습니다.</p>
       </section>
       <section id="legacy-org" className="pt-12 border-t border-gray-200/70">
-        <h2>조직 구성</h2>
+        <h2>{d.sections.org}</h2>
         <ul className="list-disc list-inside space-y-2 text-[16px]">
-          <li><strong>회장:</strong> 강경희</li>
-          <li><strong>대외협력:</strong> 김정민</li>
-          <li><strong>실무지원:</strong> 김명규, 김옥교</li>
-          <li><strong>교육지원:</strong> 양삼선, 김아람, 김유진</li>
-          <li><strong>회계:</strong> 홍윤서</li>
+          {d.orgList.map(item=> <li key={item}>{item}</li>)}
         </ul>
-        <p className="mt-6 text-sm text-gray-600">위 구성원들은 자발적인 참여로 IYCK의 활동을 이끌고 있습니다. 문의나 협력이 필요하시면 커뮤니티 내 담당자와 연락하실 수 있습니다.</p>
+        <p className="mt-6 text-sm text-gray-600">{d.orgNote}</p>
       </section>
       <section id="gallery" className="pt-12 border-t border-gray-200/70">
-        <h2>갤러리</h2>
+        <h2>{d.sections.gallery}</h2>
         <figure className="w-full flex justify-center mt-4">
           <div className="w-full rounded-xl overflow-hidden shadow-lg bg-gradient-to-b from-white to-gray-50 cursor-pointer" onClick={()=>openAt(1)} role="button" tabIndex={0}>
             <div className="aspect-[4/3] w-full">
@@ -179,9 +196,11 @@ function ArticleBody(){
 
 function SideToc({sections}){
   const active = useActiveSection(sections.map(s=>s.id), { offsetTop: 88 });
+  const { dict } = useI18n();
+  const d = dict.iyckPage;
   return (
     <aside className="hidden lg:flex flex-col gap-4 top-32 sticky h-max">
-      <div className="text-xs font-semibold tracking-wide text-brand-600 uppercase">On this page</div>
+      <div className="text-xs font-semibold tracking-wide text-brand-600 uppercase">{d.toc}</div>
       <ul className="space-y-1 text-sm">
         {sections.map(s=> {
           const is = active === s.id;

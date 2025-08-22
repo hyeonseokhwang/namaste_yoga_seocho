@@ -2,28 +2,34 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import useActiveSection from '../../shared/hooks/useActiveSection.js';
+import { useTheme } from '../../shared/ui/ThemeProvider.jsx';
+import { useI18n } from '../../shared/i18n/I18nProvider.jsx';
 
 // Optimized menu: Consolidate lineage/info under one grouped dropdown for clarity.
 // types: hash | route | group
-const nav = [
-  { type:'hash', href:'#about', label:'소개' },
-  {
-    type:'group',
-    label:'Iyengar',
-    items:[
-      { href:'/guruji', label:'구루지' },
-      { href:'/what', label:'Iyengar Yoga' },
-      { href:'/iyck', label:'IYCK 협회' },
-    ]
-  },
-  { type:'route', href:'/programs', label:'프로그램' },
-  { type:'route', href:'/teachers', label:'교사' },
-  { type:'route', href:'/gallery', label:'갤러리' },
-  { type:'route', href:'/faq', label:'FAQ' },
-  { type:'hash', href:'#contact', label:'문의' },
-];
+function buildNav(t){
+  return [
+    { type:'hash', href:'#about', label:t('nav.about') },
+    {
+      type:'group',
+      label:t('nav.iyengar'),
+      items:[
+        { href:'/guruji', label:'구루지' }, // keep localized individually later
+        { href:'/what', label:'Iyengar Yoga' },
+        { href:'/iyck', label:'IYCK 협회' },
+      ]
+    },
+    { type:'route', href:'/programs', label:t('nav.programs') },
+    { type:'route', href:'/teachers', label:t('nav.teachers') },
+    { type:'route', href:'/gallery', label:t('nav.gallery') },
+    { type:'route', href:'/faq', label:t('nav.faq') },
+    { type:'hash', href:'#contact', label:t('nav.contact') },
+  ];
+}
 
 export default function NavBar(){
+  const { t, lang, toggleLang } = useI18n();
+  const nav = buildNav(t);
   const [open,setOpen]=useState(false);
   const [scrolled,setScrolled]=useState(false);
   const location = useLocation();
@@ -49,6 +55,7 @@ export default function NavBar(){
   useEffect(()=>{ setOpenGroup(null); }, [location.pathname]);
 
   const mobileTriggerRef = useRef(null);
+  const { theme, toggle } = useTheme();
   // lock scroll when mobile sheet open
   useEffect(()=>{
     if(open){
@@ -68,28 +75,40 @@ export default function NavBar(){
             <div className="pt-1 text-[10px] md:text-[11px] font-medium tracking-widest text-brand-700">KOREA <span className="text-gray-400">|</span> IYCK</div>
           </div>
         </a>
-        <nav ref={dropdownRef} className="hidden md:flex items-center gap-7 text-sm font-medium">
+  <nav ref={dropdownRef} className="hidden md:flex items-center gap-7 text-sm font-medium" role="menubar" aria-label="Main navigation">
           {nav.map(item=> {
             if(item.type === 'group'){
               const anyActive = item.items.some(s => location.pathname === s.href);
               const open = openGroup === item.label;
               return (
-                <div key={item.label} className="relative cursor-pointer">
+    <div key={item.label} className="relative cursor-pointer" role="none">
                   <button
                     onClick={()=> setOpenGroup(open? null : item.label)}
-                    className={`inline-flex items-center gap-1 px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition cursor-pointer ${anyActive? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`}
+        className={`inline-flex items-center gap-1 px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition cursor-pointer ${anyActive? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`}
                     aria-haspopup="true"
                     aria-expanded={open}
+        aria-controls={`group-${item.label}`}
+        role="menuitem"
+                    onKeyDown={(e)=>{
+                      if(e.key==='ArrowDown'){
+                        e.preventDefault();
+                        if(!open) setOpenGroup(item.label);
+                        setTimeout(()=>{
+                          const first = dropdownRef.current?.querySelector(`#group-${item.label} a`);
+                          first?.focus();
+                        },0);
+                      }
+                    }}
                   >
                     {item.label}
                     <svg className={`w-3 h-3 transition-transform ${open? 'rotate-180':''}`} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8l5 5 5-5" /></svg>
                   </button>
                   {open && (
-                    <div className="absolute left-0 mt-2 w-48 rounded-xl border border-gray-200 bg-white/95 backdrop-blur shadow-lg py-2 animate-fade-in">
+        <div id={`group-${item.label}`} role="menu" className="absolute left-0 mt-2 w-52 rounded-xl border border-gray-200 bg-white/95 backdrop-blur shadow-lg py-2 animate-fade-in" onKeyDown={(e)=>{ if(e.key==='Escape'){ setOpenGroup(null); } }}>
                       {item.items.map(sub=> {
                         const activeSub = location.pathname === sub.href;
                         return (
-                          <a key={sub.label} href={sub.href} className={`block px-4 py-2 text-[13px] rounded-md mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${activeSub? 'bg-brand-50 text-brand-800 font-semibold':'text-gray-700 hover:bg-gray-100 hover:text-brand-800'}`}>{sub.label}</a>
+        <a role="menuitem" key={sub.label} href={sub.href} className={`block px-4 py-2 text-[13px] rounded-md mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${activeSub? 'bg-brand-50 text-brand-800 font-semibold':'text-gray-700 hover:bg-gray-100 hover:text-brand-800'}`}>{sub.label}</a>
                         );
                       })}
                     </div>
@@ -104,19 +123,56 @@ export default function NavBar(){
             const is = routeActive || hashActive;
             const finalHref = isHash ? (onHome ? item.href : `/${item.href}`) : item.href;
             return (
-              <a key={item.label} href={finalHref} className={`group relative px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition cursor-pointer ${is? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`} aria-current={is? 'page': undefined}>
+        <a role="menuitem" key={item.label} href={finalHref} className={`group relative px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition cursor-pointer ${is? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`} aria-current={is? 'page': undefined}>
                 {item.label}
                 <span className={`pointer-events-none absolute left-0 -bottom-1 h-[2px] w-full origin-left scale-x-0 bg-brand-600 transition-transform duration-300 ${is? 'scale-x-100':'group-hover:scale-x-100'}`} />
               </a>
             );
           })}
         </nav>
+        <div className="hidden md:flex items-center gap-2">
+        <button
+          onClick={toggle}
+          aria-label={theme==='dark'? t('theme.toLight'): t('theme.toDark')}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/70 border border-white/60 text-gray-700 shadow-sm backdrop-blur hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition cursor-pointer group"
+        >
+          {/* Animated sun/moon (improved clarity) */}
+          <span className="relative block w-5 h-5">
+            <svg
+              className={`absolute inset-0 w-5 h-5 origin-center transition-all duration-500 ${theme==='dark'? 'scale-0 rotate-90 opacity-0':'scale-100 rotate-0 opacity-100'}`}
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <g className="transition-opacity duration-500" >
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </g>
+            </svg>
+            <svg
+              className={`absolute inset-0 w-5 h-5 origin-center transition-all duration-500 ${theme==='dark'? 'scale-100 rotate-0 opacity-100':'scale-0 -rotate-90 opacity-0'}`}
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            >
+              {/* Crescent (lucide style) */}
+              <path d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79Z" />
+            </svg>
+          </span>
+        </button>
+        <button onClick={toggleLang} aria-label={lang==='ko'? 'Switch to English':'한국어로 보기'} className="inline-flex h-10 px-4 items-center justify-center rounded-full bg-white/70 border border-white/60 text-[11px] font-semibold tracking-wide text-gray-700 shadow-sm backdrop-blur hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition cursor-pointer">
+          {lang==='ko'? 'EN':'KO'}
+        </button>
+        </div>
   <button ref={mobileTriggerRef} onClick={()=>setOpen(true)} className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/70 border border-white/60 text-gray-700 shadow-sm backdrop-blur hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 cursor-pointer" aria-label="메뉴 열기">
           <span className="sr-only">menu</span>
           <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h14M3 12h14M3 18h14" /></svg>
         </button>
       </div>
-      {open && <StandardMobileMenu onClose={()=>{ setOpen(false); mobileTriggerRef.current?.focus(); }} />}
+  {open && <StandardMobileMenu onClose={()=>{ setOpen(false); mobileTriggerRef.current?.focus(); }} />}
     </div>
   );
 }
@@ -126,6 +182,9 @@ function StandardMobileMenu({onClose}){
   const onHome = location.pathname === '/';
   const menuRef = useRef(null);
   const [openGroup, setOpenGroup] = useState(true);
+  const { theme, toggle } = useTheme();
+  const { t, lang, toggleLang } = useI18n();
+  const nav = buildNav(t);
   // focus + trap
   useEffect(()=>{
     menuRef.current?.querySelector('button, a')?.focus();
@@ -158,6 +217,37 @@ function StandardMobileMenu({onClose}){
           </button>
         </div>
         <nav className="flex-1 overflow-y-auto px-6 py-6 space-y-4 text-[15px] font-medium">
+          <button onClick={toggle} className="w-full flex items-center justify-between px-4 py-3 rounded-xl ring-1 ring-gray-200/80 dark:ring-white/15 bg-white/70 dark:bg-white/5" aria-label={theme==='dark'? t('theme.toLight'): t('theme.toDark')}>
+            <span className="text-sm font-semibold">{theme==='dark'? t('theme.toLight'): t('theme.toDark')}</span>
+            <span className="relative w-5 h-5">
+              <svg
+                className={`absolute inset-0 w-5 h-5 origin-center transition-all duration-500 ${theme==='dark'? 'scale-0 rotate-90 opacity-0':'scale-100 rotate-0 opacity-100'}`}
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="5" />
+                <g>
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </g>
+              </svg>
+              <svg
+                className={`absolute inset-0 w-5 h-5 origin-center transition-all duration-500 ${theme==='dark'? 'scale-100 rotate-0 opacity-100':'scale-0 -rotate-90 opacity-0'}`}
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              >
+                <path d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79Z" />
+              </svg>
+            </span>
+          </button>
+          <button onClick={toggleLang} className="w-full flex items-center justify-between px-4 py-3 rounded-xl ring-1 ring-gray-200/80 dark:ring-white/15 bg-white/70 dark:bg-white/5" aria-label={lang==='ko'? 'Switch to English':'한국어로 보기'}>
+            <span className="text-sm font-semibold">{lang==='ko'? 'English':'한국어'}</span>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4h12M2 8h12M2 12h12" /></svg>
+          </button>
           {nav.map(item=> {
             if(item.type==='group'){
               return (
