@@ -43,7 +43,7 @@ export default function QuoteGuruji(){
             </blockquote>
       <figcaption className="text-sm tracking-wide text-brand-600">— B.K.S. Iyengar, <em>Light on Life</em></figcaption>
             <div className="pt-4">
-              <Button as="a" href="/guruji" size="sm">구루지 소개 페이지 →</Button>
+              <Button as="a" href="/guruji" size="sm">B.K.S Iyengar 소개 →</Button>
             </div>
           </figure>
         </div>

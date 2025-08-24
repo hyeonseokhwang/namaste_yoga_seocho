@@ -29,7 +29,7 @@ export default function Footer(){
               {[
                 ['소개','#about'],
                 ['Iyengar Yoga','/what'],
-                ['구루지','/guruji'],
+                ['B.K.S Iyengar','/guruji'],
                 ['프로그램','/programs'],
                 ['교사','/teachers'],
                 ['FAQ','/faq'],

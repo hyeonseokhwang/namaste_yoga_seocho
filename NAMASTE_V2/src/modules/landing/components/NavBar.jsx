@@ -14,7 +14,7 @@ function buildNav(t){
       type:'group',
       label:t('nav.iyengar'),
       items:[
-        { href:'/guruji', label:'구루지' }, // keep localized individually later
+  { href:'/guruji', label:'B.K.S Iyengar' }, // renamed per request
         { href:'/what', label:'Iyengar Yoga' },
         { href:'/iyck', label:'IYCK 협회' },
       ]

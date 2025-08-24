@@ -27,7 +27,16 @@ export default function GalleryPreviewRibbon(){
   <div className="absolute inset-0 opacity-[0.18] bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.15),transparent_65%)]" />
       <div className="container-beam relative mb-10 flex items-center justify-between">
         <h2 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-50">{t('galleryRibbon.title')}</h2>
-        <Button as="a" href="/gallery" size="sm" variant="ghost" className="bg-white/10 hover:bg-white/20 text-brand-50 border border-white/15">{t('galleryRibbon.viewAll')}</Button>
+        {/* Increased contrast for better visibility */}
+        <Button
+          as="a"
+          href="/gallery"
+          size="sm"
+          variant="subtle"
+          className="bg-white text-brand-800 hover:bg-white/90 border border-white/70 shadow-soft-lg"
+        >
+          {t('galleryRibbon.viewAll')}
+        </Button>
       </div>
       <div className="w-full [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <div className={`flex gap-4 px-4 ${reduce? '' : 'animate-[ribbon-scroll_55s_linear_infinite]'}`} aria-live="off">
