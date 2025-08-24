@@ -8,19 +8,22 @@ if(!CLOUD_NAME){
 }
 
 function resolveApiBase(){
+  // Prefer explicit override when provided
   const raw = import.meta.env.VITE_API_BASE || '';
   try {
     const { protocol, hostname } = window.location;
-    if(!raw) return `${protocol}//${hostname}:4000`;
-    const u = new URL(raw, `${protocol}//${hostname}`);
-    const isLocal = ['localhost','127.0.0.1'].includes(u.hostname);
-    if(!['localhost','127.0.0.1'].includes(hostname) && isLocal){
+    if (raw) {
+      const u = new URL(raw, `${protocol}//${hostname}`);
+      return `${u.protocol}//${u.hostname}${u.port ? ':'+u.port : ''}`;
+    }
+    // Local development -> talk directly to :4000
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return `${protocol}//${hostname}:4000`;
     }
-    return `${u.protocol}//${u.hostname}${u.port? ':'+u.port:''}`;
+    // Production -> same-origin (nginx proxies /api to :4000)
+    return '';
   } catch {
-    const { protocol, hostname } = window.location;
-    return `${protocol}//${hostname}:4000`;
+    return '';
   }
 }
 const API_BASE = resolveApiBase();
