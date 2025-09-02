@@ -1,7 +1,7 @@
 // Reusable SEO helpers (origin, canonical, hreflangs)
 export function getSiteOrigin(){
   if(typeof window !== 'undefined') return window.location.origin;
-  return import.meta.env.VITE_SITE_ORIGIN || 'http://203.236.91.172:5174';
+  return import.meta.env.VITE_SITE_ORIGIN || 'http://localhost:5174';
 }
 
 export function buildSeo(pathname){
@@ -27,7 +27,7 @@ export function getGlobalSchemas(){
       alternateName:'IYCK',
       url: origin,
       logo:'/img/bks-iyengar-profile.webp',
-      sameAs:[ 'https://instagram.com/iyck_official' ]
+  sameAs: []
     },
     {
       '@context':'https://schema.org',

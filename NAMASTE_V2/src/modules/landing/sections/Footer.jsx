@@ -18,8 +18,8 @@ export default function Footer(){
           <div className="space-y-4">
             <h3 className="text-sm font-semibold tracking-wide text-brand-50/90">{t('footer.contact')}</h3>
             <ul className="space-y-2 text-[13px] text-brand-100/70">
-              <li>{t('footer.email')}: <a href="mailto:info@iyck.or.kr" className="underline hover:text-white">info@iyck.or.kr</a></li>
-              <li>{t('footer.instagram')}: <a href="https://instagram.com/iyck_official" className="underline hover:text-white" rel="noopener">@iyck_official</a></li>
+              <li>{t('footer.email')}: <a href="mailto:iyengaryogacommunitykorea@gmail.com" className="underline hover:text-white">iyengaryogacommunitykorea@gmail.com</a></li>
+              <li className="opacity-80">({t('footer.emailOfficial')}) <a href="mailto:info@iyckorea.org" className="underline hover:text-white">info@iyckorea.org</a></li>
               <li>{t('footer.location')}: {t('footer.locationValue')}</li>
             </ul>
           </div>
@@ -29,7 +29,7 @@ export default function Footer(){
               {[
                 ['소개','#about'],
                 ['Iyengar Yoga','/what'],
-                ['B.K.S Iyengar','/guruji'],
+                ['B.K.S. Iyengar','/guruji'],
                 ['프로그램','/programs'],
                 ['교사','/teachers'],
                 ['FAQ','/faq'],

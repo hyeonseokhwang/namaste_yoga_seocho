@@ -83,6 +83,14 @@ export default function TeachersPage(){
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {sorted.map(t=> <TeacherCard key={t.name} {...t} />)}
           </div>
+          {lang==='ko' && (
+            <div className="mt-10 pt-6 relative">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-300/60 to-transparent" />
+              <p className="text-[11.5px] leading-relaxed text-neutral-600/80">
+                ※ 본 명단은 Ramamani Iyengar Memorial Yoga Institute (RIMYI), Pune 공식 홈페이지에 기재된 교사 명단을 기반으로 하였으며, 가나다순으로 정리하였습니다.
+              </p>
+            </div>
+          )}
         </div>
       </div>
       <Footer />

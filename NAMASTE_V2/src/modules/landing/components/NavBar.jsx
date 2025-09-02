@@ -14,7 +14,7 @@ function buildNav(t){
       type:'group',
       label:t('nav.iyengar'),
       items:[
-  { href:'/guruji', label:'B.K.S Iyengar' }, // renamed per request
+  { href:'/guruji', label:'B.K.S. Iyengar' }, // renamed per request
         { href:'/what', label:'Iyengar Yoga' },
         { href:'/iyck', label:'IYCK 협회' },
       ]
@@ -75,7 +75,7 @@ export default function NavBar(){
             <div className="pt-1 text-[10px] md:text-[11px] font-medium tracking-widest text-brand-700">KOREA <span className="text-gray-400">|</span> IYCK</div>
           </div>
         </a>
-  <nav ref={dropdownRef} className="hidden md:flex items-center gap-7 text-sm font-medium" role="menubar" aria-label="Main navigation">
+  <nav ref={dropdownRef} className="hidden md:flex items-center gap-6 lg:gap-7 text-sm font-medium whitespace-nowrap" role="menubar" aria-label="Main navigation">
           {nav.map(item=> {
             if(item.type === 'group'){
               const anyActive = item.items.some(s => location.pathname === s.href);
@@ -84,7 +84,7 @@ export default function NavBar(){
     <div key={item.label} className="relative cursor-pointer" role="none">
                   <button
                     onClick={()=> setOpenGroup(open? null : item.label)}
-        className={`inline-flex items-center gap-1 px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition cursor-pointer ${anyActive? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`}
+        className={`inline-flex items-center gap-1 px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition cursor-pointer whitespace-nowrap ${anyActive? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`}
                     aria-haspopup="true"
                     aria-expanded={open}
         aria-controls={`group-${item.label}`}
@@ -104,11 +104,11 @@ export default function NavBar(){
                     <svg className={`w-3 h-3 transition-transform ${open? 'rotate-180':''}`} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8l5 5 5-5" /></svg>
                   </button>
                   {open && (
-        <div id={`group-${item.label}`} role="menu" className="absolute left-0 mt-2 w-52 rounded-xl border border-gray-200 bg-white/95 backdrop-blur shadow-lg py-2 animate-fade-in" onKeyDown={(e)=>{ if(e.key==='Escape'){ setOpenGroup(null); } }}>
+        <div id={`group-${item.label}`} role="menu" className="absolute left-0 mt-2 w-60 rounded-xl border border-gray-200 bg-white/95 backdrop-blur shadow-lg py-2 animate-fade-in" onKeyDown={(e)=>{ if(e.key==='Escape'){ setOpenGroup(null); } }}>
                       {item.items.map(sub=> {
                         const activeSub = location.pathname === sub.href;
                         return (
-        <a role="menuitem" key={sub.label} href={sub.href} className={`block px-4 py-2 text-[13px] rounded-md mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${activeSub? 'bg-brand-50 text-brand-800 font-semibold':'text-gray-700 hover:bg-gray-100 hover:text-brand-800'}`}>{sub.label}</a>
+        <a role="menuitem" key={sub.label} href={sub.href} className={`block px-4 py-2 text-[13px] rounded-md mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 whitespace-nowrap ${activeSub? 'bg-brand-50 text-brand-800 font-semibold':'text-gray-700 hover:bg-gray-100 hover:text-brand-800'}`}>{sub.label}</a>
                         );
                       })}
                     </div>
@@ -123,7 +123,7 @@ export default function NavBar(){
             const is = routeActive || hashActive;
             const finalHref = isHash ? (onHome ? item.href : `/${item.href}`) : item.href;
             return (
-        <a role="menuitem" key={item.label} href={finalHref} className={`group relative px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition cursor-pointer ${is? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`} aria-current={is? 'page': undefined}>
+  <a role="menuitem" key={item.label} href={finalHref} className={`group relative px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 rounded-md transition cursor-pointer whitespace-nowrap ${is? 'text-brand-800 font-semibold':'text-gray-700 hover:text-brand-700'}`} aria-current={is? 'page': undefined}>
                 {item.label}
                 <span className={`pointer-events-none absolute left-0 -bottom-1 h-[2px] w-full origin-left scale-x-0 bg-brand-600 transition-transform duration-300 ${is? 'scale-x-100':'group-hover:scale-x-100'}`} />
               </a>

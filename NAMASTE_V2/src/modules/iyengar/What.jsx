@@ -12,8 +12,7 @@ export default function WhatIyengarPage(){
   const { dict, lang } = useI18n();
   const d = dict.whatPage;
   const runtime = typeof window !== 'undefined';
-  // Fixed public origin for customer preview
-  const origin = runtime ? window.location.origin : 'http://203.236.91.172:5174';
+  const origin = runtime ? window.location.origin : (import.meta.env.VITE_SITE_ORIGIN || 'http://localhost:5174');
   const pathname = '/what';
   const base = origin + pathname;
   const hreflangs = [
