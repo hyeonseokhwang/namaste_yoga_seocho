@@ -1,6 +1,6 @@
 // Extracted from legacy Teachers.jsx
 const teachersData = [
-  { name: '홍정순 (Jennifer Hong)', location:'서울', phone:'82 50 7136 3212', email:'jshong3212@gmail.com', instagram:'https://www.instagram.com/metayogalife' },
+  { name: '홍정순 (Jennifer Hong)', location:'서울', phone:'82 10 3071 3212', email:'jshong3212@gmail.com', instagram:'https://www.instagram.com/metayogalife' },
   { name: '김아람 (Aram Kim)', location:'서울', phone:'82 10 3066 8458', email:'yogaram.kim@gmail.com', instagram:'https://www.instagram.com/yogaram.kim' },
   { name: '김정민 (Jung-Min Kim)', location:'서울', phone:'82 10 5633 6878', email:'iyengaryogamin@gmail.com', website:'https://www.iyengaryogamin.com', instagram:'https://www.instagram.com/iyengaryogamin' },
   { name: '황정인 (Jungin Hwang)', location:'산청/온라인', phone:'82 10 3999 4486', email:'jungin.k.hwang@gmail.com', instagram:'https://www.instagram.com/yogasings/' },

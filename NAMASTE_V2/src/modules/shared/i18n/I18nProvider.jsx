@@ -50,7 +50,8 @@ const dictionaries = {
   emailOfficial: '공식',
       instagram: '인스타그램',
       location: '위치',
-  locationValue: 'South Korea',
+  locationValue: '서울시 양천구 신목로 82, 2층',
+      rimyiLink: '리미 본 센터 홈페이지',
       rights: '© 2025 IYCK. All rights reserved.'
     },
     programsPreview: {
@@ -257,7 +258,8 @@ const dictionaries = {
   emailOfficial: 'Official',
   instagram: 'Instagram',
   location: 'Location',
-  locationValue: 'South Korea',
+  locationValue: '82, Sinmok-ro, Yangcheon-gu, Seoul (2F)',
+      rimyiLink: 'RIMYI (Main Institute) – Website',
       rights: '© 2025 IYCK. All rights reserved.'
     },
     programsPreview: {

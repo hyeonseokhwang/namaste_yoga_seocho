@@ -21,6 +21,11 @@ export default function Footer(){
               <li>{t('footer.email')}: <a href="mailto:iyengaryogacommunitykorea@gmail.com" className="underline hover:text-white">iyengaryogacommunitykorea@gmail.com</a></li>
               <li className="opacity-80">({t('footer.emailOfficial')}) <a href="mailto:info@iyckorea.org" className="underline hover:text-white">info@iyckorea.org</a></li>
               <li>{t('footer.location')}: {t('footer.locationValue')}</li>
+              <li>
+                <a href="https://share.google/eJ4pW3hhPUakh97kl" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+                  {t('footer.rimyiLink')}
+                </a>
+              </li>
             </ul>
           </div>
           <div className="space-y-4">
