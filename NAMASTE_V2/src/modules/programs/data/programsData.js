@@ -27,3 +27,28 @@ export const pastWorkshops = {
   '2024': [ '11월 — 홍귀석 선생님 워크숍', '7월 — Justin Herold 선생님 (멘토십 준비반)', '4월 — Justin Herold 선생님 (멘토십 준비반)' ],
   '2023': [ '10월 — Justin Herold 선생님', '4월 — 홍귀석 선생님' ],
 };
+
+// Additional upcoming workshops
+export const moreUpcoming = [
+  {
+    id: 'justin-2025-11',
+    dateLabel: '2025 NOVEMBER',
+    title: 'Justin Herold · Satida 워크숍 (멘토십 과정)',
+    summary: '멘토십 과정 학생 대상 3일 집중 수업. 논리적 아사나 설명과 기본기를 중시하는 지도 방식으로 심화 수련.',
+    startDate: '2025-11-07T10:00:00+09:00',
+    totalHours: 18,
+    sessions: [
+      '11/7(금) 10:00–13:00 · 14:30–17:30',
+      '11/8(토) 10:00–13:00 · 14:30–17:30',
+      '11/9(일) 10:00–13:00 · 14:30–17:30'
+    ],
+    location: '아이엥가요가 커뮤니티 코리아 (서울시 양천구 신목로 82 2층)',
+    tuition: '500,000원 (VAT 포함)',
+    contacts: '강경희 010-3340-7633 · 김유진 010-7126-5586 · 김정민 010-5633-6878',
+    email: 'iyengaryogacommunitykorea@gmail.com',
+    focus: '멘토십 집중 / 기본기 · 설명 · 태도',
+    images: [
+      'https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_1600/gallery/gtbpbtaufyczgicdr3jb.jpg'
+    ]
+  }
+];

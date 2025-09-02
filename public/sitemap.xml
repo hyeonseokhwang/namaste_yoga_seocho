@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Update the origin below if your canonical domain differs -->
+  <!-- Assumed origin: https://iyckorea.org -->
+  <url>
+    <loc>https://iyckorea.org/</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.00</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://iyckorea.org/?lang=ko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iyckorea.org/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iyckorea.org/?lang=en" />
+  </url>
+  <url>
+    <loc>https://iyckorea.org/iyck</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.90</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://iyckorea.org/iyck?lang=ko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iyckorea.org/iyck?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iyckorea.org/iyck?lang=en" />
+  </url>
+  <url>
+    <loc>https://iyckorea.org/guruji</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://iyckorea.org/guruji?lang=ko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iyckorea.org/guruji?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iyckorea.org/guruji?lang=en" />
+  </url>
+  <url>
+    <loc>https://iyckorea.org/iyengar/guruji</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://iyckorea.org/what</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://iyckorea.org/what?lang=ko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iyckorea.org/what?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iyckorea.org/what?lang=en" />
+  </url>
+  <url>
+    <loc>https://iyckorea.org/iyengar/what</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://iyckorea.org/programs</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://iyckorea.org/programs?lang=ko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iyckorea.org/programs?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iyckorea.org/programs?lang=en" />
+  </url>
+  <url>
+    <loc>https://iyckorea.org/teachers</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://iyckorea.org/teachers?lang=ko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iyckorea.org/teachers?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iyckorea.org/teachers?lang=en" />
+  </url>
+  <url>
+    <loc>https://iyckorea.org/faq</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.60</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://iyckorea.org/faq?lang=ko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iyckorea.org/faq?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iyckorea.org/faq?lang=en" />
+  </url>
+  <url>
+    <loc>https://iyckorea.org/gallery</loc>
+    <lastmod>2025-09-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://iyckorea.org/gallery?lang=ko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iyckorea.org/gallery?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iyckorea.org/gallery?lang=en" />
+  </url>
+</urlset>

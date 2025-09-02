@@ -5,6 +5,8 @@ import react from '@vitejs/plugin-react';
 // Also proxy /api/* to the Express gallery server (default :4000) during dev.
 export default defineConfig({
   plugins: [react()],
+  // Load environment variables from the parent project root (where .env resides)
+  envDir: '..',
   publicDir: '../public',
   server: {
     port: 5174,

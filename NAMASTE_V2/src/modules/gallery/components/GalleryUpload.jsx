@@ -1,6 +1,9 @@
 import { useCallback, useState } from 'react';
 
-const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'drzjmobkb';
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'iyck_gallery'; // e.g., iyck_gallery (unsigned)
+const FOLDER = 'gallery';
+const TAGS = 'iyck_gallery';
 
 function resolveApiBase(){
   const raw = import.meta.env.VITE_API_BASE || '';
@@ -31,15 +34,19 @@ export default function GalleryUpload(){
       for(const file of files){
         const form = new FormData();
         form.append('file', file);
-        form.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-        const cloudUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`;
+        form.append('upload_preset', UPLOAD_PRESET);
+        form.append('folder', FOLDER);
+        form.append('tags', TAGS);
+        // Cloudinary image upload endpoint
+        const cloudUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
         const r = await fetch(cloudUrl, { method:'POST', body: form });
         if(!r.ok) throw new Error('클라우드 업로드 실패');
         const data = await r.json();
         // notify backend to index (optional)
         try { await fetch(`${API_BASE}/api/gallery/index`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ public_id: data.public_id, folder_path: data.folder, format: data.format, secure_url: data.secure_url }) }); } catch {}
       }
-      setMsg('완료');
+      setMsg('업로드 완료');
+      // signal gallery to refresh
       window.dispatchEvent(new Event('gallery:refresh'));
       setTimeout(()=> setMsg(''), 1500);
     } catch(e){

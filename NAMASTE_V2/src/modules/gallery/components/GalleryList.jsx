@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import BlurImage from '../../shared/ui/BlurImage.jsx';
 import useFocusTrap from '../../shared/hooks/useFocusTrap.js';
 
-const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'drzjmobkb';
 if(!CLOUD_NAME){
   try { console.warn('[Gallery] VITE_CLOUDINARY_CLOUD_NAME not set – using secure_url based transformation fallback'); } catch {}
 }
@@ -99,6 +99,12 @@ export default function GalleryList({ initialFolder='all', hideFilters=false, om
 
   useEffect(()=> { setActiveFolder(initialFolder||'all'); setOpenIdx(-1); }, [initialFolder]);
   useEffect(()=> { load(); }, [load]);
+  // Refresh when uploader signals completion
+  useEffect(()=>{
+    const handler = ()=> load();
+    window.addEventListener('gallery:refresh', handler);
+    return ()=> window.removeEventListener('gallery:refresh', handler);
+  },[load]);
   useEffect(()=> { return ()=> { if(abortRef.current){ try { abortRef.current.abort(); } catch {} } }; },[]);
 
   // folder filter fallback

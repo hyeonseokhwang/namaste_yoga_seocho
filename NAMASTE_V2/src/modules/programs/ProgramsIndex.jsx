@@ -2,7 +2,7 @@ import NavBar from '../landing/components/NavBar.jsx';
 import Footer from '../landing/sections/Footer.jsx';
 import useScrollReveal from '../landing/hooks/useScrollReveal.js';
 import { useState, useEffect, useRef } from 'react';
-import { featuredWorkshop, pastWorkshops } from './data/programsData.js';
+import { featuredWorkshop, pastWorkshops, moreUpcoming } from './data/programsData.js';
 import Meta from '../shared/seo/Meta.jsx';
 import { buildSeo, getGlobalSchemas } from '../shared/seo/seoUtils.js';
 import { useI18n } from '../shared/i18n/I18nProvider.jsx';
@@ -123,6 +123,44 @@ function ProgramsOverview(){
             </div>
             <div className="absolute inset-0 pointer-events-none rounded-4xl ring-1 ring-brand-300/0 group-hover:ring-brand-400/70 transition" />
           </div>
+          {/* Additional upcoming workshops (same card style as featured) */}
+          {!!moreUpcoming?.length && (
+            <div className="mt-8 grid gap-6">
+              {moreUpcoming.map(w => (
+                <article key={w.id} className="relative rounded-4xl overflow-hidden ring-1 ring-brand-300/60 bg-gradient-to-br from-white via-brand-50 to-brand-100 shadow-[0_6px_28px_-8px_rgba(40,70,90,0.25)] md:flex group">
+                  <div className="md:w-1/2 relative h-64 md:h-[420px]">
+                      <img src={w.images[0]} alt={w.title} className="absolute inset-0 w-full h-full object-cover object-center" loading="lazy" />
+                    <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+                      <span className="px-3 py-1 rounded-full bg-brand-100/95 backdrop-blur text-[11px] font-semibold tracking-wide text-brand-700">UPCOMING</span>
+                      <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur text-[11px] font-medium tracking-wide text-brand-800">WORKSHOP</span>
+                    </div>
+                  </div>
+                  <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6">
+                    <header className="space-y-3">
+                      <h4 className="text-[12px] font-medium tracking-widest text-brand-600">{w.dateLabel}</h4>
+                      <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">{w.title}</h3>
+                      <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">{w.summary}</p>
+                    </header>
+                    <div className="grid sm:grid-cols-2 gap-6 text-[13px] leading-relaxed">
+                      <ul className="space-y-2 text-brand-800/80">
+                        <li><strong className="text-brand-700">{pg.session1}:</strong> {w.sessions[0]}</li>
+                        <li><strong className="text-brand-700">{pg.session2}:</strong> {w.sessions[1]}</li>
+                        <li><strong className="text-brand-700">{pg.totalHours}:</strong> {w.totalHours}{lang==='ko'? '시간':''}</li>
+                        <li><strong className="text-brand-700">{pg.location}:</strong> {w.location}</li>
+                      </ul>
+                      <ul className="space-y-2 text-brand-800/80">
+                        <li><strong className="text-brand-700">{pg.tuition}:</strong> {w.tuition}</li>
+                        <li><strong className="text-brand-700">{pg.contact}:</strong> {w.contacts}</li>
+                        <li><strong className="text-brand-700">{pg.email}:</strong> {w.email}</li>
+                        <li><strong className="text-brand-700">{pg.focus}:</strong> {w.focus}</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 pointer-events-none rounded-4xl ring-1 ring-brand-300/0 group-hover:ring-brand-400/70 transition" />
+                </article>
+              ))}
+            </div>
+          )}
         </section>
 
   <PastSection />
@@ -242,7 +280,7 @@ function FeaturedImages(){
     return () => window.removeEventListener('keydown', handler);
   }, [open]);
   return (
-    <div className="md:w-1/2 relative h-72 md:h-auto flex flex-col">
+    <div className="md:w-1/2 relative h-64 md:h-[420px] flex flex-col">
       <button onClick={()=>setOpen(true)} className="relative flex-1 text-left cursor-zoom-in">
     {images.map((im,i)=> (
           <BlurImage
@@ -250,7 +288,7 @@ function FeaturedImages(){
             src={im.src}
             alt={im.alt}
             className="absolute inset-0"
-            imgClassName={`w-full h-full object-cover transition-opacity duration-700 ${i===index? 'opacity-100':'opacity-0'}`}
+            imgClassName={`w-full h-full object-cover object-center transition-opacity duration-700 ${i===index? 'opacity-100':'opacity-0'}`}
             loading="lazy"
           />
         ))}
