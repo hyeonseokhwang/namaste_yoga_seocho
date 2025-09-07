@@ -166,7 +166,7 @@ function ArticleBody(){
         <figure className="w-full flex justify-center mt-4">
           <div className="w-full rounded-xl overflow-hidden shadow-lg bg-gradient-to-b from-white to-gray-50 cursor-pointer" onClick={()=>openAt(1)} role="button" tabIndex={0}>
             <div className="aspect-[4/3] w-full">
-              <img src={images[1]} alt="IYCK 협회 소개" className="w-full h-full object-cover block" />
+              <img src={images[1]} alt="IYCK 단체 소개" className="w-full h-full object-cover block" />
             </div>
           </div>
         </figure>

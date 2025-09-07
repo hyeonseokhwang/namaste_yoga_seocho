@@ -76,7 +76,7 @@ export default function IYCK() {
           </p>
         </div>
 
-        {/* Hero image centered below the text (협회 소개: images[1]) - use same container width */}
+        {/* Hero image centered below the text (단체 소개: images[1]) - use same container width */}
         <figure className="w-full flex justify-center">
           <div
             className="w-full max-w-screen-lg rounded-xl overflow-hidden shadow-lg bg-gradient-to-b from-white to-gray-50 cursor-pointer"
@@ -87,7 +87,7 @@ export default function IYCK() {
             <div className="aspect-[4/3] w-full">
               <img
                 src={images[1]}
-                alt="IYCK 협회 소개"
+                alt="IYCK 단체 소개"
                 className="w-full h-full object-cover block"
               />
             </div>

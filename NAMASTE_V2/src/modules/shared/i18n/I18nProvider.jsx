@@ -38,7 +38,7 @@ const dictionaries = {
       subtitle1: '바쁜 일상과 자극에서 한 발 물러나 <span class="font-semibold text-accent-200/90">정교한 디테일 · 안정된 호흡 · 의식적 정렬</span>을 체험하세요.',
       subtitle2: '지금 여기서 아이엥가 요가를 만나 몸과 마음의 구조를 다시 정렬하는 첫 발을 내딛어 보세요.',
       ctaExperience: '체험 클래스',
-      ctaAbout: '협회 소개',
+      ctaAbout: '단체 소개',
       ctaWhy: 'WHY?',
       aria: '메인 히어로 – 깊은 호흡 고요한 정렬'
     },
