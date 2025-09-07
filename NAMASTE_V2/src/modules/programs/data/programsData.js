@@ -1,6 +1,7 @@
 // Centralized programs/workshops data configuration
 export const featuredWorkshop = {
   id: 'eyal-2025-09',
+  // Default (ko) values
   dateLabel: '2025 SEPTEMBER',
   title: 'Eyal Shifroni 선생님 9월 워크숍',
   summary: '첫 공식 한국 방문. Iyengar Yoga 정렬·프롭·시퀀스·티칭 통합 접근을 3일 집중 구조로 체험합니다.',
@@ -19,7 +20,21 @@ export const featuredWorkshop = {
   images: [
     '/img/class/KakaoTalk_20250818_091833656_02.jpg',
     '/img/class/KakaoTalk_20250818_091833656_01.jpg'
-  ]
+  ],
+  // English overrides (merged at runtime when lang==='en')
+  en: {
+    title: 'September Workshop with Eyal Shifroni',
+    summary: 'First official visit to Korea. 3‑day intensive integrating alignment, props, sequencing & teaching in the Iyengar method.',
+    sessions: [
+      'Sep 12 14:00–17:00',
+      'Sep 13 09:30–12:30 · 14:30–16:30',
+      'Sep 14 09:30–12:30 · 14:30–16:30'
+    ],
+    location: 'Space 920 (Yeoksam-ro 9-gil 20 B1, Gangnam)',
+    tuition: '₩429,000 (VAT incl.)',
+    contacts: 'Myungkyu Kim · Yunseo Hong · Aram Kim',
+    focus: 'Integrated alignment/props · Thematic sequences · Counter & Restorative'
+  }
 };
 
 export const pastWorkshops = {
@@ -49,6 +64,19 @@ export const moreUpcoming = [
     focus: '멘토십 집중 / 기본기 · 설명 · 태도',
     images: [
       'https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_1600/gallery/gtbpbtaufyczgicdr3jb.jpg'
-    ]
+    ],
+    en: {
+      title: 'Justin Herold · Satida Workshop (Mentorship Track)',
+      summary: '3‑day intensive for mentorship-track students. Logical articulation of asana with emphasis on fundamentals & teaching attitude.',
+      sessions: [
+        'Nov 7 (Fri) 10:00–13:00 · 14:30–17:30',
+        'Nov 8 (Sat) 10:00–13:00 · 14:30–17:30',
+        'Nov 9 (Sun) 10:00–13:00 · 14:30–17:30'
+      ],
+      location: 'Iyengar Yoga Community Korea (82, Sinmok-ro 2F, Yangcheon-gu, Seoul)',
+      tuition: '₩500,000 (VAT incl.)',
+      contacts: 'Kyunghee Kang 010-3340-7633 · Yujin Kim 010-7126-5586 · Jungmin Kim 010-5633-6878',
+      focus: 'Mentorship intensive · Fundamentals · Explanation · Attitude'
+    }
   }
 ];

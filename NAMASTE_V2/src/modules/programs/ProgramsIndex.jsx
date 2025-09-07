@@ -1,8 +1,8 @@
 import NavBar from '../landing/components/NavBar.jsx';
 import Footer from '../landing/sections/Footer.jsx';
 import useScrollReveal from '../landing/hooks/useScrollReveal.js';
-import { useState, useEffect, useRef } from 'react';
-import { featuredWorkshop, pastWorkshops, moreUpcoming } from './data/programsData.js';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { featuredWorkshop as baseFeatured, pastWorkshops, moreUpcoming as baseMoreUpcoming } from './data/programsData.js';
 import Meta from '../shared/seo/Meta.jsx';
 import { buildSeo, getGlobalSchemas } from '../shared/seo/seoUtils.js';
 import { useI18n } from '../shared/i18n/I18nProvider.jsx';
@@ -12,6 +12,17 @@ import useFocusTrap from '../shared/hooks/useFocusTrap.js';
 export default function ProgramsIndex(){
   const { lang, dict } = useI18n();
   const { hreflangs, canonical } = buildSeo('/programs');
+  // Merge language overrides for featured + upcoming
+  const featuredWorkshop = useMemo(()=> {
+    if(lang==='en' && baseFeatured.en){
+      return { ...baseFeatured, ...baseFeatured.en };
+    }
+    return baseFeatured;
+  }, [lang]);
+  const moreUpcoming = useMemo(()=> {
+    if(lang==='en') return baseMoreUpcoming.map(w=> w.en? ({...w, ...w.en}) : w);
+    return baseMoreUpcoming;
+  }, [lang]);
   const pg = dict.programsPage;
   return (
     <>
@@ -46,8 +57,8 @@ export default function ProgramsIndex(){
       />
       <div id="top" />
       <NavBar />
-      <Hero />
-  <ProgramsOverview />
+  <Hero />
+	<ProgramsOverview featuredWorkshop={featuredWorkshop} moreUpcoming={moreUpcoming} />
       <div id="contact"><Footer /></div>
     </>
   );
@@ -73,8 +84,8 @@ function Hero(){
           </div>
         </div>
         <div className="md:col-span-5 flex flex-col gap-5">
-          <HeroThumb img="/img/practice2.jpg" label="구조·정렬을 통한 단계적 확장" />
-          <HeroThumb img="/img/practice3.jpg" label="프롭 활용 & 회복 시퀀스" />
+          <HeroThumb img="/img/practice2.jpg" label={pg.heroThumb1} />
+          <HeroThumb img="/img/practice3.jpg" label={pg.heroThumb2} />
         </div>
       </div>
   <div className="h-px w-full mt-12 bg-gradient-to-r from-transparent via-brand-300/60 to-transparent" />
@@ -82,7 +93,7 @@ function Hero(){
   );
 }
 
-function ProgramsOverview(){
+function ProgramsOverview({featuredWorkshop, moreUpcoming}){
   const { dict, lang } = useI18n();
   const pg = dict.programsPage;
   return (
@@ -131,8 +142,8 @@ function ProgramsOverview(){
                   <div className="md:w-1/2 relative h-64 md:h-[420px]">
                       <img src={w.images[0]} alt={w.title} className="absolute inset-0 w-full h-full object-cover object-center" loading="lazy" />
                     <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                      <span className="px-3 py-1 rounded-full bg-brand-100/95 backdrop-blur text-[11px] font-semibold tracking-wide text-brand-700">UPCOMING</span>
-                      <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur text-[11px] font-medium tracking-wide text-brand-800">WORKSHOP</span>
+                      <span className="px-3 py-1 rounded-full bg-brand-100/95 backdrop-blur text-[11px] font-semibold tracking-wide text-brand-700">{pg.tags.upcoming}</span>
+                      <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur text-[11px] font-medium tracking-wide text-brand-800">{pg.tags.workshop}</span>
                     </div>
                   </div>
                   <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6">
@@ -169,17 +180,7 @@ function ProgramsOverview(){
   );
 }
 
-function ProgramCard({img, caption}){
-  return (
-    <div className="relative rounded-2xl overflow-hidden ring-1 ring-brand-300/60 bg-white/70 backdrop-blur shadow-sm group">
-      <img src={img} alt={caption} className="w-full h-52 object-cover object-center transition-transform duration-700 group-hover:scale-[1.04]" loading="lazy" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent opacity-60" />
-      <div className="p-4 relative">
-        <p className="text-[12px] text-white/90 leading-relaxed drop-shadow-sm">{caption}</p>
-      </div>
-    </div>
-  );
-}
+// (Removed unused ProgramCard component)
 
 function ProgramTypeCard({icon, title, desc}){
   const Icon = resolveIcon(icon);
@@ -266,6 +267,8 @@ function PastSection(){
 }
 
 function FeaturedImages(){
+  const { dict } = useI18n();
+  const pg = dict.programsPage;
   const images = [
     {src:'/img/class/KakaoTalk_20250818_091833656_02.jpg', alt:'Eyal Shifroni 워크숍 이미지 1 (남자 강사 지도)' },
     {src:'/img/class/KakaoTalk_20250818_091833656_01.jpg', alt:'Eyal Shifroni 워크숍 이미지 2 (참가자 수련)' }
@@ -294,8 +297,8 @@ function FeaturedImages(){
         ))}
         <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-black/5 to-transparent pointer-events-none" />
         <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-          <span className="px-3 py-1 rounded-full bg-brand-100/90 backdrop-blur text-[11px] font-semibold tracking-wide text-brand-700">FEATURED</span>
-          <span className="px-3 py-1 rounded-full bg-white/85 backdrop-blur text-[11px] font-medium tracking-wide text-brand-800">WORKSHOP</span>
+          <span className="px-3 py-1 rounded-full bg-brand-100/90 backdrop-blur text-[11px] font-semibold tracking-wide text-brand-700">{pg.tags.featured}</span>
+          <span className="px-3 py-1 rounded-full bg-white/85 backdrop-blur text-[11px] font-medium tracking-wide text-brand-800">{pg.tags.workshop}</span>
         </div>
       </button>
       <div className="flex gap-2 p-3 justify-center bg-white/30 backdrop-blur-sm md:bg-transparent md:absolute md:bottom-4 md:left-4 md:flex-col md:gap-3">
@@ -370,10 +373,10 @@ function PastHighlightCard(){
         <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6">
           <header id="past-highlight-heading" className="space-y-4" lang={lang}>
             <div className="flex flex-wrap gap-2 items-center text-[11px] tracking-wide font-semibold">
-              <span className="px-3 py-1 rounded-full bg-brand-100 text-brand-700">HIGHLIGHT</span>
+              <span className="px-3 py-1 rounded-full bg-brand-100 text-brand-700">{pg.tags.highlight}</span>
               <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">GEORGE DOVAS</span>
               <span className="px-3 py-1 rounded-full bg-white/70 ring-1 ring-brand-200 text-brand-700">2025 JULY</span>
-              <span className="px-3 py-1 rounded-full bg-white/60 ring-1 ring-brand-300 text-brand-600">PAST</span>
+              <span className="px-3 py-1 rounded-full bg-white/60 ring-1 ring-brand-300 text-brand-600">{pg.tags.past}</span>
             </div>
             <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">George Dovas {pg.highlight}</h3>
             <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">{pg.highlightDesc}</p>

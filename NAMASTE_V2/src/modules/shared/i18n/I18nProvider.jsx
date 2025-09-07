@@ -103,6 +103,8 @@ const dictionaries = {
     programsPage: {
       heroTitle: '프로그램 안내',
       heroDesc: '워크숍 · 공개 수업 · 교사 연수 · 커뮤니티 모임을 통해 Iyengar Yoga의 깊이를 단계적으로 체험합니다. 구조화된 학습과 공동체 경험을 연결합니다.',
+  heroThumb1: '구조·정렬을 통한 단계적 확장',
+  heroThumb2: '프롭 활용 & 회복 시퀀스',
       types: {
         workshop: ['정기 워크숍','주제·정렬·호흡·시퀀스 집중 심화'],
         intro: ['공개 수업','첫 체험 & 기본 원리 안내'],
@@ -110,6 +112,7 @@ const dictionaries = {
         community: ['커뮤니티 모임','사례 공유 · 질의 · 회복 수련']
       },
       upcoming: '진행중 / 예정',
+  tags: { featured: 'FEATURED', workshop: 'WORKSHOP', upcoming: 'UPCOMING', highlight: 'HIGHLIGHT', past: 'PAST' },
       session1: '세션1', session2: '세션2', totalHours: '총시간', location: '장소', tuition: '수강료', contact: '문의', email: '이메일', focus: '포커스',
       register: '신청 / 문의', disclaimer: '※ 시간/구성은 상황에 따라 일부 조정될 수 있습니다.',
       pastHeading: '지난 워크숍', years: '연도별 기록', highlight: '워크숍 하이라이트', highlightDesc: '2025년 7월 진행된 워크숍의 일부 현장 모습입니다. 전체 사진은 갤러리 전용 보기에서 더 탐색할 수 있습니다.',
@@ -310,6 +313,8 @@ const dictionaries = {
     programsPage: {
       heroTitle: 'Programs Overview',
       heroDesc: 'Experience the depth of Iyengar Yoga progressively through workshops, intro classes, teacher mentoring and community gatherings. Structured learning meets shared practice.',
+  heroThumb1: 'Progressive expansion through structure & alignment',
+  heroThumb2: 'Prop intelligence & restorative sequencing',
       types: {
         workshop: ['Workshops','Deep focus on themes · alignment · breath · sequencing'],
         intro: ['Intro Classes','First experience & core principles'],
@@ -317,6 +322,7 @@ const dictionaries = {
         community: ['Community Meets','Case sharing · Q&A · restorative']
       },
       upcoming: 'Current / Upcoming',
+  tags: { featured: 'FEATURED', workshop: 'WORKSHOP', upcoming: 'UPCOMING', highlight: 'HIGHLIGHT', past: 'PAST' },
       session1: 'Session1', session2: 'Session2', totalHours: 'Total', location: 'Location', tuition: 'Tuition', contact: 'Contact', email: 'Email', focus: 'Focus',
       register: 'Register', disclaimer: '※ Schedule/content may adjust slightly.',
       pastHeading: 'Past Workshops', years: 'By Year', highlight: 'Workshop Highlight', highlightDesc: 'Selected moments from the July 2025 workshop. Explore the full gallery for more images.',
