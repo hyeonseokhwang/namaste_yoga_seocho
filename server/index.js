@@ -1,11 +1,19 @@
 // server/index.js
-import 'dotenv/config';
+// Enhanced dotenv loading: allow .env either in /server or project root
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+// First load local server/.env (if exists)
+dotenv.config();
+// If admin password vars still not present, try parent root .env
+if(!process.env.WORKSHOP_ADMIN_PASSWORD && !process.env.WORKSHOP_ADMIN_PASSWORD_HASH){
+  const parentEnv = path.resolve(process.cwd(), '..', '.env');
+  try { if(fs.existsSync(parentEnv)) dotenv.config({ path: parentEnv, override: false }); } catch {}
+}
 import express from 'express';
 import cors from 'cors';
 import { v2 as cloudinary } from 'cloudinary';
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
 
 const app = express();
 // Disable implicit ETag generation to avoid 304 reuse with dynamic queries
