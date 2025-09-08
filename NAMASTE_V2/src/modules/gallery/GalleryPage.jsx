@@ -27,6 +27,8 @@ export default function GalleryPage(){
   const initialFolder = params.get('folder') || 'all';
   const initialMode = params.get('mode') === 'georgedovas' ? 'georgedovas' : 'all';
   const [mode,setMode] = useState(initialMode);
+  const [adminLogged,setAdminLogged] = useState(false);
+  useEffect(()=>{ (async()=>{ try { const r= await fetch('/api/admin/me'); const j= await r.json(); setAdminLogged(!!j.loggedIn); } catch {} })(); },[]);
 
   // George Dovas simple viewer state
   const [gdItems,setGdItems] = useState([]);
@@ -99,9 +101,11 @@ export default function GalleryPage(){
 
         {mode==='all' && (
           <>
-            <section className="mb-10">
-              <GalleryUpload />
-            </section>
+            {adminLogged && (
+              <section className="mb-10">
+                <GalleryUpload />
+              </section>
+            )}
             <GalleryList initialFolder={initialFolder} omitBasePills />
           </>
         )}

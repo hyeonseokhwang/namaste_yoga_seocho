@@ -2,7 +2,7 @@ import NavBar from '../landing/components/NavBar.jsx';
 import Footer from '../landing/sections/Footer.jsx';
 import useScrollReveal from '../landing/hooks/useScrollReveal.js';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { featuredWorkshop as baseFeatured, pastWorkshops, moreUpcoming as baseMoreUpcoming } from './data/programsData.js';
+import { featuredWorkshop as baseFeatured, pastWorkshops, pastWorkshopsEn, moreUpcoming as baseMoreUpcoming } from './data/programsData.js';
 import Meta from '../shared/seo/Meta.jsx';
 import { buildSeo, getGlobalSchemas } from '../shared/seo/seoUtils.js';
 import { useI18n } from '../shared/i18n/I18nProvider.jsx';
@@ -396,7 +396,8 @@ function PastHighlightCard(){
 function PastTimeline({className=''}){
   const { dict, lang } = useI18n();
   const pg = dict.programsPage;
-  const years = Object.keys(pastWorkshops).sort((a,b)=> b.localeCompare(a));
+  const source = lang==='en'? pastWorkshopsEn : pastWorkshops;
+  const years = Object.keys(source).sort((a,b)=> b.localeCompare(a));
   return (
     <div className={"relative "+className}>
       <div className="mb-10 flex items-center gap-3">
@@ -405,7 +406,7 @@ function PastTimeline({className=''}){
       </div>
       <div className="grid md:grid-cols-3 gap-10 text-[13px] text-brand-800/80">
         {years.map(year => {
-          const filtered = pastWorkshops[year].filter(item => !/George Dovas/i.test(item));
+          const filtered = source[year].filter(item => !/George Dovas/i.test(item));
           if(!filtered.length) return null;
           return (
             <div key={year} className="relative pl-4 before:absolute before:left-0 before:top-1 before:bottom-1 before:w-px before:bg-gradient-to-b from-brand-400/60 to-brand-200/20">

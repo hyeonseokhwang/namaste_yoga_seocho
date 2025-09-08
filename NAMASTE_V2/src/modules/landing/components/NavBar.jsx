@@ -65,6 +65,17 @@ export default function NavBar(){
     }
   },[open]);
 
+  // Admin session state
+  const [adminModal,setAdminModal] = useState(false);
+  const [adminPass,setAdminPass] = useState('');
+  const [adminErr,setAdminErr] = useState('');
+  const [adminLogged,setAdminLogged] = useState(false);
+  async function checkAdmin(){ try { const r = await fetch('/api/admin/me'); const j = await r.json(); setAdminLogged(!!j.loggedIn); } catch {} }
+  useEffect(()=>{ checkAdmin(); },[]);
+  async function doLogin(e){
+    e.preventDefault(); setAdminErr('');
+    try{ const r = await fetch('/api/admin/login',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({password: adminPass})}); const j= await r.json(); if(!r.ok) throw new Error(j.error||'login_failed'); setAdminPass(''); setAdminModal(false); setAdminLogged(true);}catch(err){ setAdminErr(err.message);} }
+  async function doLogout(){ try { await fetch('/api/admin/logout',{method:'POST'});} catch{} setAdminLogged(false); }
   return (
     <div className={`fixed top-0 left-0 right-0 z-40 transition-colors duration-300 border-b animate-fade-in ${scrolled? 'bg-white/90 backdrop-blur-md border-white/60 shadow-sm':'bg-white/65 backdrop-blur-md border-white/50 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]'}`}>
       <div className="container-beam flex items-center justify-between py-3 md:py-4">
@@ -130,7 +141,7 @@ export default function NavBar(){
             );
           })}
         </nav>
-        <div className="hidden md:flex items-center gap-2">
+  <div className="hidden md:flex items-center gap-2">
         <button
           onClick={toggle}
           aria-label={theme==='dark'? t('theme.toLight'): t('theme.toDark')}
@@ -166,6 +177,18 @@ export default function NavBar(){
         <button onClick={toggleLang} aria-label={lang==='ko'? 'Switch to English':'한국어로 보기'} className="inline-flex h-10 px-4 items-center justify-center rounded-full bg-white/70 border border-white/60 text-[11px] font-semibold tracking-wide text-gray-700 shadow-sm backdrop-blur hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition cursor-pointer">
           {lang==='ko'? 'EN':'KO'}
         </button>
+        <button
+          onClick={()=> setAdminModal(true)}
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-sm backdrop-blur transition cursor-pointer group ${adminLogged? 'bg-brand-700 border-brand-600 text-white hover:bg-brand-600':'bg-white/70 border-white/60 text-gray-700 hover:bg-white focus-visible:ring-brand-500'}`}
+          aria-label={adminLogged? 'Admin (logged in)':'Admin login'}
+          title={adminLogged? 'Admin (logged in)':'Admin login'}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-colors">
+            <path d="M12 3 5 6v5c0 5 3.5 9 7 10 3.5-1 7-5 7-10V6l-7-3Z" />
+            <path d="M9.5 11.5a2.5 2.5 0 1 1 5 0v2.5h-5v-2.5Z" />
+          </svg>
+          <span className="sr-only">Admin</span>
+        </button>
         </div>
   <button ref={mobileTriggerRef} onClick={()=>setOpen(true)} className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/70 border border-white/60 text-gray-700 shadow-sm backdrop-blur hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 cursor-pointer" aria-label="메뉴 열기">
           <span className="sr-only">menu</span>
@@ -173,6 +196,33 @@ export default function NavBar(){
         </button>
       </div>
   {open && <StandardMobileMenu onClose={()=>{ setOpen(false); mobileTriggerRef.current?.focus(); }} />}
+  {adminModal && createPortal(
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center" role="dialog" aria-modal="true" aria-label="Admin login">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={()=> setAdminModal(false)} />
+      <form onSubmit={doLogin} className="relative w-full max-w-sm mx-auto rounded-xl bg-white p-6 shadow-lg ring-1 ring-brand-200 flex flex-col gap-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">Admin {adminLogged && <span className="text-[11px] px-2 py-0.5 rounded-full bg-brand-700 text-white">Active</span>}</h2>
+        {!adminLogged && (
+          <>
+            <input type="password" autoFocus value={adminPass} onChange={e=> setAdminPass(e.target.value)} placeholder="Password" className="px-3 py-2 rounded border text-sm" />
+            {adminErr && <div className="text-[12px] text-red-600">{adminErr}</div>}
+            <div className="flex gap-2 justify-end">
+              <button type="button" onClick={()=> setAdminModal(false)} className="px-4 py-2 rounded bg-gray-200 text-sm">Cancel</button>
+              <button type="submit" className="px-4 py-2 rounded bg-brand-700 text-white text-sm font-medium hover:bg-brand-600">Login</button>
+            </div>
+          </>
+        )}
+        {adminLogged && (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-brand-700">세션 활성화됨.</p>
+            <div className="flex gap-2 flex-wrap">
+              <a href="/admin/workshops" className="px-4 py-2 rounded bg-brand-700 text-white text-sm hover:bg-brand-600">Workshops</a>
+              <a href="/gallery" className="px-4 py-2 rounded bg-indigo-600 text-white text-sm hover:bg-indigo-500">Gallery</a>
+              <button type="button" onClick={doLogout} className="px-4 py-2 rounded bg-gray-300 text-sm hover:bg-gray-400 text-gray-800">Logout</button>
+            </div>
+          </div>
+        )}
+      </form>
+    </div>, document.body)}
     </div>
   );
 }

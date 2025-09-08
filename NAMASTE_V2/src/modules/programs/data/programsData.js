@@ -43,6 +43,13 @@ export const pastWorkshops = {
   '2023': [ '10월 — Justin Herold 선생님', '4월 — 홍귀석 선생님' ],
 };
 
+// English timeline strings
+export const pastWorkshopsEn = {
+  '2025': [ 'July 19–20 — George Dovas (Seoul) photos' ],
+  '2024': [ 'November — Workshop with Teacher Hong Gwiseok', 'July — Justin Herold (Mentorship Track)', 'April — Justin Herold (Mentorship Track)' ],
+  '2023': [ 'October — Justin Herold', 'April — Teacher Hong Gwiseok' ],
+};
+
 // Additional upcoming workshops
 export const moreUpcoming = [
   {

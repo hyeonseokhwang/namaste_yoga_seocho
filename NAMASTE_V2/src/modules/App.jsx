@@ -7,6 +7,7 @@ import ProgramsIndex from './programs/ProgramsIndex.jsx';
 import GalleryPage from './gallery/GalleryPage.jsx';
 import TeachersPage from './iyengar/Teachers.jsx';
 import FAQPage from './faq/FAQPage.jsx';
+import WorkshopsAdmin from './admin/WorkshopsAdmin.jsx';
 
 export default function App(){
   return (
@@ -23,6 +24,7 @@ export default function App(){
   <Route path="/teachers" element={<TeachersPage />} />
   <Route path="/faq" element={<FAQPage />} />
   <Route path="/gallery" element={<GalleryPage />} />
+  <Route path="/admin/workshops" element={<WorkshopsAdmin />} />
       </Routes>
     </BrowserRouter>
   );

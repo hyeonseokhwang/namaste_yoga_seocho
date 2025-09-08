@@ -3,6 +3,9 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { v2 as cloudinary } from 'cloudinary';
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 // Disable implicit ETag generation to avoid 304 reuse with dynamic queries
@@ -15,6 +18,22 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'x-admin-token'],
 }));
 app.use(express.json());
+
+// --- Simple cookie parser (avoid extra dependency) ---
+function parseCookies(cookieHeader){
+  const out = {};
+  if(!cookieHeader) return out;
+  cookieHeader.split(/; */).forEach(part=>{
+    const idx = part.indexOf('=');
+    if(idx>0){
+      const k = decodeURIComponent(part.slice(0,idx).trim());
+      const v = decodeURIComponent(part.slice(idx+1).trim());
+      out[k]=v;
+    }
+  });
+  return out;
+}
+app.use((req,_res,next)=>{ req.cookies = parseCookies(req.headers.cookie||''); next(); });
 
 // 필수 env 체크
 const REQUIRED = ['CLOUDINARY_CLOUD_NAME','CLOUDINARY_API_KEY','CLOUDINARY_API_SECRET'];
@@ -217,4 +236,131 @@ app.delete('/api/gallery', requireAdmin, async (req, res) => {
 });
 
 const port = process.env.PORT || 4000;
-app.listen(port, () => console.log('Gallery API listening on', port));
+// ------------------ Dynamic Workshops (file-based simple store) ------------------
+const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+const WORKSHOPS_FILE = path.join(DATA_DIR, 'workshops.json');
+if(!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, {recursive:true});
+function loadWorkshops(){
+  try { return JSON.parse(fs.readFileSync(WORKSHOPS_FILE,'utf8')); } catch { return []; }
+}
+function saveWorkshops(list){
+  try { fs.writeFileSync(WORKSHOPS_FILE, JSON.stringify(list,null,2)); } catch(e){ console.error('[workshops:save]', e); }
+}
+let workshops = loadWorkshops();
+
+function sha256(v){ return crypto.createHash('sha256').update(v).digest('hex'); }
+// Fallback default password (requested) if env hash not supplied.
+// NOTE: For production, set WORKSHOP_ADMIN_PASSWORD_HASH to override this.
+const DEFAULT_ADMIN_PASSWORD = 'namaste11!';
+const workshopHash = process.env.WORKSHOP_ADMIN_PASSWORD_HASH || sha256(DEFAULT_ADMIN_PASSWORD);
+
+// In-memory session store (token -> timestamp)
+const SESSIONS = new Map();
+const SESSION_TTL_MS = 1000 * 60 * 60 * 2; // 2h
+function createSession(){
+  const token = crypto.randomBytes(32).toString('hex');
+  SESSIONS.set(token, Date.now());
+  return token;
+}
+function validateSession(token){
+  if(!token) return false;
+  const ts = SESSIONS.get(token);
+  if(!ts) return false;
+  if(Date.now()-ts > SESSION_TTL_MS){
+    SESSIONS.delete(token);
+    return false;
+  }
+  // refresh sliding expiration
+  SESSIONS.set(token, Date.now());
+  return true;
+}
+function clearSession(token){ if(token) SESSIONS.delete(token); }
+
+function setSessionCookie(res, token){
+  const secure = process.env.NODE_ENV === 'production';
+  const cookie = `iyck_admin=${token}; Path=/; HttpOnly; SameSite=Lax${secure?'; Secure':''}`;
+  res.setHeader('Set-Cookie', cookie);
+}
+function clearSessionCookie(res){
+  const secure = process.env.NODE_ENV === 'production';
+  res.setHeader('Set-Cookie', `iyck_admin=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT${secure?'; Secure':''}`);
+}
+
+// --- Admin session endpoints ---
+app.post('/api/admin/login', (req,res)=> {
+  const pwd = (req.body?.password || '').trim();
+  if(!workshopHash) return res.status(500).json({error:'server_not_configured'});
+  if(!pwd || sha256(pwd)!==workshopHash) return res.status(401).json({error:'invalid_password'});
+  const token = createSession();
+  setSessionCookie(res, token);
+  res.json({ ok:true });
+});
+
+app.post('/api/admin/logout', (req,res)=> {
+  const token = req.cookies.iyck_admin;
+  clearSession(token);
+  clearSessionCookie(res);
+  res.json({ ok:true });
+});
+
+app.get('/api/admin/me', (req,res)=> {
+  const token = req.cookies.iyck_admin;
+  const loggedIn = validateSession(token);
+  res.json({ loggedIn });
+});
+
+function requireWorkshopAuth(req,res,next){
+  // Prefer session cookie
+  const token = req.cookies.iyck_admin;
+  if(validateSession(token)) return next();
+  // Fallback legacy header (will be deprecated)
+  const pwd = req.header('x-workshop-pass');
+  if(workshopHash && pwd && sha256(pwd) === workshopHash) return next();
+  return res.status(401).json({error:'unauthorized'});
+}
+
+// Public list
+app.get('/api/workshops', (_req,res)=> {
+  res.set({'Cache-Control':'no-store'});
+  res.json({ items: workshops });
+});
+
+// Create
+app.post('/api/workshops', requireWorkshopAuth, (req,res)=> {
+  const b = req.body||{};
+  const required = ['title','dateLabel','summary','sessions','location','tuition','contacts','email','focus'];
+  const missing = required.filter(k=> !b[k]);
+  if(missing.length) return res.status(400).json({error:'missing_fields', fields:missing});
+  const id = b.id || (b.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Date.now());
+  const item = {
+    id,
+    dateLabel: b.dateLabel,
+    title: b.title,
+    summary: b.summary,
+    startDate: b.startDate||null,
+    totalHours: b.totalHours||null,
+    sessions: Array.isArray(b.sessions)? b.sessions : [],
+    location: b.location,
+    tuition: b.tuition,
+    contacts: b.contacts,
+    email: b.email,
+    focus: b.focus,
+    images: Array.isArray(b.images)? b.images : [],
+    createdAt: new Date().toISOString()
+  };
+  workshops.push(item);
+  saveWorkshops(workshops);
+  res.status(201).json({ ok:true, item });
+});
+
+// Delete
+app.delete('/api/workshops/:id', requireWorkshopAuth, (req,res)=> {
+  const { id } = req.params;
+  const before = workshops.length;
+  workshops = workshops.filter(w=> w.id!==id);
+  if(before===workshops.length) return res.status(404).json({error:'not_found'});
+  saveWorkshops(workshops);
+  res.json({ ok:true });
+});
+
+app.listen(port, () => console.log('Gallery & Workshops API listening on', port));
