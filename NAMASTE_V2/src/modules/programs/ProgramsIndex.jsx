@@ -24,6 +24,42 @@ export default function ProgramsIndex(){
     return baseMoreUpcoming;
   }, [lang]);
   const pg = dict.programsPage;
+  // Dynamic workshops state (admin additions)
+  const [dyn, setDyn] = useState([]);
+  const [admin, setAdmin] = useState(false);
+  const [loadingDyn, setLoadingDyn] = useState(false);
+  const [formOpen,setFormOpen] = useState(false);
+  const [creating,setCreating] = useState(false);
+  const [err,setErr] = useState('');
+  const newRef = useRef(null);
+  const [form,setForm] = useState({ id:null, title:'', dateLabel:'', summary:'', sessions:'', totalHours:'', location:'', tuition:'', contacts:'', email:'', focus:'', images:[], imageInput:'', status:'upcoming' });
+  async function loadDyn(){
+    try { setLoadingDyn(true); const r = await fetch('/api/workshops'); const j = await r.json(); setDyn(j.items||[]); } catch{} finally { setLoadingDyn(false);} }
+  async function checkAdmin(){ try { const r= await fetch('/api/admin/me'); const j= await r.json(); const ok=!!j.loggedIn; setAdmin(ok); if(ok) loadDyn(); } catch{} }
+  useEffect(()=>{ checkAdmin(); },[]);
+  async function createOrSave(e){ e.preventDefault(); setErr(''); setCreating(true); try {
+      const images = form.images.filter(Boolean);
+      const payload = { title:form.title.trim(), dateLabel:form.dateLabel.trim(), summary:form.summary.trim(), startDate:null, totalHours: form.totalHours.trim(), sessions: form.sessions.split('\n').filter(Boolean), location: form.location.trim(), tuition: form.tuition.trim(), contacts: form.contacts.trim(), email: form.email.trim(), focus: form.focus.trim(), images, status: form.status };
+      let r,j;
+      if(form.id){
+        r = await fetch('/api/workshops/'+form.id,{method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+      } else {
+        r = await fetch('/api/workshops',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+      }
+      j = await r.json(); if(!r.ok) throw new Error(j.error||'save_failed');
+      setForm({ id:null, title:'', dateLabel:'', summary:'', sessions:'', totalHours:'', location:'', tuition:'', contacts:'', email:'', focus:'', images:[], imageInput:'', status:'upcoming'});
+      setFormOpen(false); loadDyn(); setTimeout(()=> newRef.current?.scrollIntoView({behavior:'smooth'}), 50);
+    } catch(e){ setErr(e.message);} finally { setCreating(false);} }
+  async function delDyn(id){ if(!window.confirm('Delete this workshop?')) return; try { const r = await fetch('/api/workshops/'+id,{method:'DELETE'}); const j= await r.json(); if(!r.ok) throw new Error(j.error||'delete_failed'); setDyn(d=> d.filter(x=> x.id!==id)); } catch(e){ alert(e.message); } }
+  async function cloneDyn(id){ try { const r = await fetch('/api/workshops/'+id+'/clone',{method:'POST'}); const j= await r.json(); if(!r.ok) throw new Error(j.error||'clone_failed'); loadDyn(); } catch(e){ alert(e.message); } }
+  function editDyn(w){ setForm({ id:w.id, title:w.title, dateLabel:w.dateLabel, summary:w.summary, sessions:(w.sessions||[]).join('\n'), totalHours:w.totalHours||'', location:w.location, tuition:w.tuition, contacts:w.contacts, email:w.email, focus:w.focus, images:[...(w.images||[])], imageInput:'', status:w.status||'upcoming'}); setFormOpen(true); setTimeout(()=> newRef.current?.scrollIntoView({behavior:'smooth'}), 50); }
+  function addImage(){
+    const url = (form.imageInput||'').trim();
+    if(!url) return;
+    setForm(f=> ({...f, images:[...f.images, url], imageInput:''}));
+  }
+  function removeImage(i){ setForm(f=> ({...f, images: f.images.filter((_,idx)=> idx!==i)})); }
+  function moveImage(i,dir){ setForm(f=> { const arr=[...f.images]; const ni=i+dir; if(ni<0||ni>=arr.length) return f; [arr[i],arr[ni]]=[arr[ni],arr[i]]; return {...f, images:arr}; }); }
   return (
     <>
       <Meta
@@ -58,7 +94,7 @@ export default function ProgramsIndex(){
       <div id="top" />
       <NavBar />
   <Hero />
-	<ProgramsOverview featuredWorkshop={featuredWorkshop} moreUpcoming={moreUpcoming} />
+  <ProgramsOverview featuredWorkshop={featuredWorkshop} moreUpcoming={moreUpcoming} dynamicList={dyn} admin={admin} handlers={{delDyn, cloneDyn, editDyn, addImage, removeImage, moveImage, setFormOpen, formOpen, form, setForm, createOrSave, creating, err, loadingDyn, newRef}} />
       <div id="contact"><Footer /></div>
     </>
   );
@@ -93,9 +129,12 @@ function Hero(){
   );
 }
 
-function ProgramsOverview({featuredWorkshop, moreUpcoming}){
+function ProgramsOverview({featuredWorkshop, moreUpcoming, dynamicList=[], admin=false, handlers}){
   const { dict, lang } = useI18n();
   const pg = dict.programsPage;
+  const dynSorted = [...dynamicList].sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
+  const ongoing = dynSorted.filter(w=> w.status==='ongoing');
+  const upcomingDyn = dynSorted.filter(w=> w.status!=='ongoing');
   return (
     <main className="bg-gradient-to-b from-brand-50 via-white to-brand-50/60 pb-44 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_70%,rgba(86,141,168,0.18),transparent_65%),radial-gradient(circle_at_85%_25%,rgba(50,101,127,0.16),transparent_60%)]" />
@@ -135,12 +174,78 @@ function ProgramsOverview({featuredWorkshop, moreUpcoming}){
             <div className="absolute inset-0 pointer-events-none rounded-4xl ring-1 ring-brand-300/0 group-hover:ring-brand-400/70 transition" />
           </div>
           {/* Additional upcoming workshops (same card style as featured) */}
-          {!!moreUpcoming?.length && (
-            <div className="mt-8 grid gap-6">
+          {!!(moreUpcoming?.length || ongoing.length || upcomingDyn.length || admin) && (
+            <div className="mt-8 grid gap-6" ref={handlers?.newRef}>
+              {admin && (
+                <div className="relative rounded-4xl overflow-hidden ring-1 ring-dashed ring-brand-300/70 bg-white/60 p-8 flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-brand-700">{handlers.form.id? '워크숍 수정' : (handlers.formOpen? '새 워크숍 생성' : '워크숍 추가')}</h4>
+                    <button onClick={()=> { if(handlers.formOpen){ handlers.setForm({ id:null, title:'', dateLabel:'', summary:'', sessions:'', totalHours:'', location:'', tuition:'', contacts:'', email:'', focus:'', images:'', status:'upcoming'});} handlers.setFormOpen(o=> !o); }} className="text-xs px-3 py-1 rounded-full bg-brand-700 text-white hover:bg-brand-600">{handlers.formOpen? pg.manage.cancel:pg.manage.add}</button>
+                  </div>
+                  {handlers.err && <div className="text-[12px] text-red-600">{handlers.err}</div>}
+                  {handlers.formOpen && (
+                    <form onSubmit={handlers.createOrSave} className="grid md:grid-cols-2 gap-4 text-[12px]">
+                      <div className="flex flex-col gap-1">
+                        <label className="font-semibold text-brand-700/80 uppercase tracking-wide">{pg.manage.status}</label>
+                        <select value={handlers.form.status} onChange={e=> handlers.setForm(f=>({...f,status:e.target.value}))} className="px-3 py-2 rounded border bg-white/70 text-[12px]">
+                          <option value="ongoing">{pg.manage.ongoing}</option>
+                          <option value="upcoming">{pg.manage.upcoming}</option>
+                        </select>
+                      </div>
+                      {['title','dateLabel','summary','sessions','totalHours','location','tuition','contacts','email','focus'].map(k=> (
+                        <div key={k} className={k==='summary'|| k==='sessions'|| k==='focus'? 'md:col-span-2 flex flex-col gap-1':'flex flex-col gap-1'}>
+                          <label className="font-semibold text-brand-700/80 uppercase tracking-wide">{k}</label>
+                          {['summary','sessions','focus'].includes(k)? (
+                            <textarea rows={k==='summary'?3: k==='focus'?2:3} value={handlers.form[k]} onChange={e=> handlers.setForm(f=>({...f,[k]:e.target.value}))} className="px-3 py-2 rounded border bg-white/70" required={['title','dateLabel','summary'].includes(k)} />
+                          ):(
+                            <input value={handlers.form[k]} onChange={e=> handlers.setForm(f=>({...f,[k]:e.target.value}))} className="px-3 py-2 rounded border bg-white/70" required={['title','dateLabel','summary'].includes(k)} />
+                          )}
+                          {k==='sessions' && <p className="text-[10px] text-brand-600/70">세션별 한 줄 (줄바꿈)</p>}
+                        </div>
+                      ))}
+                      {/* Images manager */}
+                      <div className="md:col-span-2 flex flex-col gap-2">
+                        <label className="font-semibold text-brand-700/80 uppercase tracking-wide">Images</label>
+                        <div className="flex gap-2 items-center">
+                          <input value={handlers.form.imageInput} onChange={e=> handlers.setForm(f=> ({...f, imageInput:e.target.value}))} placeholder="https://..." className="flex-1 px-3 py-2 rounded border bg-white/70 text-[12px]" />
+                          <button type="button" onClick={handlers.addImage} className="px-3 py-2 rounded-md bg-brand-700 text-white text-[12px] font-semibold hover:bg-brand-600">Add</button>
+                        </div>
+                        {handlers.form.images.length>0 && (
+                          <ul className="grid sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2">
+                            {handlers.form.images.map((img,i)=> (
+                              <li key={i} className="relative group">
+                                <img src={img} alt="preview" className="w-full h-28 object-cover rounded-lg ring-1 ring-brand-200/60" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 rounded-lg">
+                                  <button type="button" onClick={()=> handlers.moveImage(i,-1)} disabled={i===0} className="px-2 py-1 text-[10px] rounded bg-white/70 disabled:opacity-40">↑</button>
+                                  <button type="button" onClick={()=> handlers.moveImage(i,1)} disabled={i===handlers.form.images.length-1} className="px-2 py-1 text-[10px] rounded bg-white/70 disabled:opacity-40">↓</button>
+                                  <button type="button" onClick={()=> handlers.removeImage(i)} className="px-2 py-1 text-[10px] rounded bg-red-600 text-white">X</button>
+                                </div>
+                                <p className="mt-1 text-[10px] break-all leading-snug line-clamp-2 text-brand-700/70">{img}</p>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        <p className="text-[10px] text-brand-600/70">한 번에 하나씩 URL 추가 · 드래그 순서 기능은 추후</p>
+                      </div>
+                      <div className="md:col-span-2 flex justify-end">
+                        <button disabled={handlers.creating} className="px-5 py-2 rounded-full bg-brand-700 text-white text-xs font-semibold hover:bg-brand-600 disabled:opacity-50">{handlers.creating? (handlers.form.id? '업데이트...' : '저장...') : (handlers.form.id? '업데이트':'저장')}</button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+              {!!ongoing.length && <h4 className="text-sm font-semibold text-brand-700 mt-4">{pg.ongoing}</h4>}
+              {ongoing.map(w => (
+                <WorkshopCard key={w.id} w={w} lang={lang} pg={pg} admin={admin} onDelete={()=> handlers.delDyn(w.id)} onClone={()=> handlers.cloneDyn(w.id)} onEdit={()=> handlers.editDyn(w)} dynamic />
+              ))}
+              {!!upcomingDyn.length && <h4 className="text-sm font-semibold text-brand-700 mt-6">{pg.upcoming}</h4>}
+              {upcomingDyn.map(w => (
+                <WorkshopCard key={w.id} w={w} lang={lang} pg={pg} admin={admin} onDelete={()=> handlers.delDyn(w.id)} onClone={()=> handlers.cloneDyn(w.id)} onEdit={()=> handlers.editDyn(w)} dynamic />
+              ))}
               {moreUpcoming.map(w => (
                 <article key={w.id} className="relative rounded-4xl overflow-hidden ring-1 ring-brand-300/60 bg-gradient-to-br from-white via-brand-50 to-brand-100 shadow-[0_6px_28px_-8px_rgba(40,70,90,0.25)] md:flex group">
-                  <div className="md:w-1/2 relative h-64 md:h-[420px]">
-                      <img src={w.images[0]} alt={w.title} className="absolute inset-0 w-full h-full object-cover object-center" loading="lazy" />
+                  <div className="md:w-1/2 relative h-[28rem] md:h-[760px]">
+                      <img src={w.images[0]} alt={w.title} className="absolute inset-0 w-full h-full object-cover object-top" loading="lazy" />
                     <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                       <span className="px-3 py-1 rounded-full bg-brand-100/95 backdrop-blur text-[11px] font-semibold tracking-wide text-brand-700">{pg.tags.upcoming}</span>
                       <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur text-[11px] font-medium tracking-wide text-brand-800">{pg.tags.workshop}</span>
@@ -166,10 +271,12 @@ function ProgramsOverview({featuredWorkshop, moreUpcoming}){
                         <li><strong className="text-brand-700">{pg.focus}:</strong> {w.focus}</li>
                       </ul>
                     </div>
+                    {admin && <div className="pt-2"><button onClick={()=> handlers.delDyn(w.id)} className="text-[11px] px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-500">삭제</button></div>}
                   </div>
                   <div className="absolute inset-0 pointer-events-none rounded-4xl ring-1 ring-brand-300/0 group-hover:ring-brand-400/70 transition" />
                 </article>
               ))}
+              {handlers.loadingDyn && <div className="text-[12px] text-brand-600">불러오는 중...</div>}
             </div>
           )}
         </section>
@@ -177,6 +284,91 @@ function ProgramsOverview({featuredWorkshop, moreUpcoming}){
   <PastSection />
       </div>
     </main>
+  );
+}
+
+// Reusable card for dynamic workshops (same style)
+function WorkshopCard({w, lang, pg, admin, onDelete, onClone, onEdit, dynamic}){
+  const [active,setActive] = useState(0);
+  const [lightbox,setLightbox] = useState(false);
+  const images = w.images||[];
+  useEffect(()=> { if(active>=images.length) setActive(0); }, [images.length]);
+  return (
+    <article className="relative rounded-4xl overflow-hidden ring-1 ring-brand-300/60 bg-gradient-to-br from-white via-brand-50 to-brand-100 shadow-[0_6px_28px_-8px_rgba(40,70,90,0.25)] md:flex group">
+  <div className="md:w-1/2 relative h-[28rem] md:h-[760px] select-none">
+  {images[active] && <img onClick={()=> setLightbox(true)} src={images[active]} alt={w.title} className="cursor-zoom-in absolute inset-0 w-full h-full object-cover object-top transition-opacity" loading="lazy" />}
+        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+          <span className="px-3 py-1 rounded-full bg-brand-100/95 backdrop-blur text-[11px] font-semibold tracking-wide text-brand-700">{w.status==='ongoing'? pg.tags.ongoing : pg.tags.upcoming}</span>
+          <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur text-[11px] font-medium tracking-wide text-brand-800">{pg.tags.workshop}</span>
+          {dynamic && <span className="px-3 py-1 rounded-full bg-indigo-600 text-white text-[11px] font-medium">NEW</span>}
+        </div>
+        {images.length>1 && (
+          <div className="absolute bottom-2 left-2 right-2 flex gap-2 overflow-x-auto scrollbar-thin pr-4">
+            {images.map((img,i)=> (
+              <button type="button" key={i} onClick={()=> setActive(i)} className={`relative w-14 h-14 rounded-lg overflow-hidden ring-2 ${i===active? 'ring-brand-500':'ring-white/40'} shrink-0 group/thumb`}>
+                <img src={img} alt="thumb" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                {i!==active && <span className="absolute inset-0 bg-black/30 opacity-0 group-hover/thumb:opacity-100 transition" />}
+              </button>
+            ))}
+          </div>
+        )}
+        {lightbox && (
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col">
+            <div className="flex justify-between items-center px-4 py-3 text-white text-xs">
+              <span>{active+1} / {images.length}</span>
+              <div className="flex gap-2 items-center">
+                <button onClick={()=> setActive(a=> (a-1+images.length)%images.length)} className="px-3 py-1 bg-white/15 rounded-full hover:bg-white/25 disabled:opacity-30" disabled={images.length<2}>Prev</button>
+                <button onClick={()=> setActive(a=> (a+1)%images.length)} className="px-3 py-1 bg-white/15 rounded-full hover:bg-white/25 disabled:opacity-30" disabled={images.length<2}>Next</button>
+                <button onClick={()=> setLightbox(false)} className="px-3 py-1 bg-white/20 rounded-full hover:bg-white/30">닫기</button>
+              </div>
+            </div>
+            <div className="flex-1 flex items-center justify-center relative px-4 pb-4 md:px-10 md:pb-8">
+              {active>0 && images.length>1 && <button onClick={()=> setActive(a=> a-1)} className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 text-white/90 bg-black/40 hover:bg-black/60 rounded-full w-11 h-11 items-center justify-center text-lg">‹</button>}
+              {active<images.length-1 && images.length>1 && <button onClick={()=> setActive(a=> a+1)} className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 text-white/90 bg-black/40 hover:bg-black/60 rounded-full w-11 h-11 items-center justify-center text-lg">›</button>}
+              <div className="relative max-h-[70vh] max-w-[82vw] md:max-w-[860px] w-full h-full flex items-center justify-center rounded-xl ring-1 ring-white/10 bg-black/10 p-2 md:p-4">
+                <img src={images[active]} alt={w.title} className="max-h-full max-w-full object-contain shadow-xl rounded-lg" />
+              </div>
+            </div>
+            {images.length>1 && (
+              <div className="px-4 pt-2 pb-4 flex gap-2 overflow-x-auto bg-black/30">
+                {images.map((img,i)=> (
+                  <button key={i} onClick={()=> setActive(i)} className={`relative w-14 h-14 md:w-16 md:h-16 rounded-md overflow-hidden ring-2 transition ${i===active? 'ring-brand-400':'ring-white/20 hover:ring-white/40'}`}>
+                    <img src={img} alt="thumb" className="absolute inset-0 w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6">
+        <header className="space-y-3">
+          <h4 className="text-[12px] font-medium tracking-widest text-brand-600">{w.dateLabel}</h4>
+          <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">{w.title}</h3>
+          <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">{w.summary}</p>
+        </header>
+        <div className="grid sm:grid-cols-2 gap-6 text-[13px] leading-relaxed">
+          <ul className="space-y-2 text-brand-800/80">
+            <li><strong className="text-brand-700">{pg.session1}:</strong> {w.sessions?.[0]}</li>
+            <li><strong className="text-brand-700">{pg.session2}:</strong> {w.sessions?.[1]}</li>
+            <li><strong className="text-brand-700">{pg.totalHours}:</strong> {w.totalHours}{lang==='ko'? '시간':''}</li>
+            <li><strong className="text-brand-700">{pg.location}:</strong> {w.location}</li>
+          </ul>
+          <ul className="space-y-2 text-brand-800/80">
+            <li><strong className="text-brand-700">{pg.tuition}:</strong> {w.tuition}</li>
+            <li><strong className="text-brand-700">{pg.contact}:</strong> {w.contacts}</li>
+            <li><strong className="text-brand-700">{pg.email}:</strong> {w.email}</li>
+            <li><strong className="text-brand-700">{pg.focus}:</strong> {w.focus}</li>
+          </ul>
+        </div>
+        {admin && <div className="pt-2 flex gap-2 flex-wrap">
+          <button onClick={onEdit} className="text-[11px] px-3 py-1 rounded-full bg-brand-700 text-white hover:bg-brand-600">수정</button>
+            <button onClick={onClone} className="text-[11px] px-3 py-1 rounded-full bg-amber-600 text-white hover:bg-amber-500">복제</button>
+            <button onClick={onDelete} className="text-[11px] px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-500">삭제</button>
+        </div>}
+      </div>
+      <div className="absolute inset-0 pointer-events-none rounded-4xl ring-1 ring-brand-300/0 group-hover:ring-brand-400/70 transition" />
+    </article>
   );
 }
 
@@ -243,7 +435,7 @@ function resolveIcon(name){
 function HeroThumb({img, label}){
   return (
     <div className="relative group rounded-xl overflow-hidden ring-1 ring-brand-200/60 bg-white/30 backdrop-blur">
-  <img src={img} alt={label} loading="lazy" decoding="async" width="640" height="320" className="h-40 w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.05]" />
+  <img src={img} alt={label} loading="lazy" decoding="async" width="640" height="320" className="h-40 w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.05]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
       <div className="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 leading-snug drop-shadow-sm">{label}</div>
     </div>
@@ -283,7 +475,7 @@ function FeaturedImages(){
     return () => window.removeEventListener('keydown', handler);
   }, [open]);
   return (
-    <div className="md:w-1/2 relative h-64 md:h-[420px] flex flex-col">
+  <div className="md:w-1/2 relative h-[28rem] md:h-[760px] flex flex-col">
       <button onClick={()=>setOpen(true)} className="relative flex-1 text-left cursor-zoom-in">
     {images.map((im,i)=> (
           <BlurImage
@@ -291,7 +483,7 @@ function FeaturedImages(){
             src={im.src}
             alt={im.alt}
             className="absolute inset-0"
-            imgClassName={`w-full h-full object-cover object-center transition-opacity duration-700 ${i===index? 'opacity-100':'opacity-0'}`}
+            imgClassName={`w-full h-full object-cover object-top transition-opacity duration-700 ${i===index? 'opacity-100':'opacity-0'}`}
             loading="lazy"
           />
         ))}

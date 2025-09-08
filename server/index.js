@@ -337,6 +337,7 @@ app.post('/api/workshops', requireWorkshopAuth, (req,res)=> {
   const missing = required.filter(k=> !b[k]);
   if(missing.length) return res.status(400).json({error:'missing_fields', fields:missing});
   const id = b.id || (b.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Date.now());
+  const status = ['ongoing','upcoming'].includes(b.status) ? b.status : 'upcoming';
   const item = {
     id,
     dateLabel: b.dateLabel,
@@ -351,6 +352,7 @@ app.post('/api/workshops', requireWorkshopAuth, (req,res)=> {
     email: b.email,
     focus: b.focus,
     images: Array.isArray(b.images)? b.images : [],
+    status,
     createdAt: new Date().toISOString()
   };
   workshops.push(item);
@@ -366,6 +368,36 @@ app.delete('/api/workshops/:id', requireWorkshopAuth, (req,res)=> {
   if(before===workshops.length) return res.status(404).json({error:'not_found'});
   saveWorkshops(workshops);
   res.json({ ok:true });
+});
+
+// Update (PUT full update, partial fields accepted)
+app.put('/api/workshops/:id', requireWorkshopAuth, (req,res)=> {
+  const { id } = req.params; const b = req.body||{};
+  const idx = workshops.findIndex(w=> w.id===id);
+  if(idx===-1) return res.status(404).json({error:'not_found'});
+  const w = workshops[idx];
+  const fields = ['title','dateLabel','summary','startDate','totalHours','sessions','location','tuition','contacts','email','focus','images','status'];
+  fields.forEach(f=> {
+    if(b[f]!==undefined){
+      if(f==='sessions') w.sessions = Array.isArray(b.sessions)? b.sessions:[];
+      else if(f==='images') w.images = Array.isArray(b.images)? b.images:[];
+      else if(f==='status') w.status = ['ongoing','upcoming'].includes(b.status)? b.status : (w.status||'upcoming');
+      else w[f] = b[f];
+    }
+  });
+  saveWorkshops(workshops);
+  res.json({ ok:true, item: w });
+});
+
+// Clone
+app.post('/api/workshops/:id/clone', requireWorkshopAuth, (req,res)=> {
+  const { id } = req.params;
+  const original = workshops.find(w=> w.id===id);
+  if(!original) return res.status(404).json({error:'not_found'});
+  const clone = { ...original, id: original.id+'-copy-'+Date.now(), title: original.title + ' (복제)', createdAt: new Date().toISOString() };
+  workshops.push(clone);
+  saveWorkshops(workshops);
+  res.status(201).json({ ok:true, item: clone });
 });
 
 app.listen(port, () => console.log('Gallery & Workshops API listening on', port));
