@@ -35,18 +35,14 @@ function parseCookies(cookieHeader){
 }
 app.use((req,_res,next)=>{ req.cookies = parseCookies(req.headers.cookie||''); next(); });
 
-// 필수 env 체크
-const REQUIRED = ['CLOUDINARY_CLOUD_NAME','CLOUDINARY_API_KEY','CLOUDINARY_API_SECRET'];
-const missing = REQUIRED.filter(k => !process.env[k]);
-if (missing.length) {
-  console.error('[ENV] Missing:', missing.join(', '));
+// ---- Cloudinary env fallback (allow using existing VITE_ vars for convenience) ----
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME;
+const API_KEY    = process.env.CLOUDINARY_API_KEY    || process.env.VITE_CLOUDINARY_API_KEY;
+const API_SECRET = process.env.CLOUDINARY_API_SECRET || process.env.VITE_CLOUDINARY_API_SECRET;
+if(!CLOUD_NAME || !API_KEY || !API_SECRET){
+  console.warn('[ENV] Cloudinary variables incomplete. Set CLOUDINARY_* or VITE_CLOUDINARY_* trio.');
 }
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+cloudinary.config({ cloud_name: CLOUD_NAME, api_key: API_KEY, api_secret: API_SECRET });
 
 // 단순 헬스체크
 app.get('/api/health', (_req, res) => {
@@ -249,9 +245,11 @@ function saveWorkshops(list){
 let workshops = loadWorkshops();
 
 function sha256(v){ return crypto.createHash('sha256').update(v).digest('hex'); }
-// Removed hard-coded default password for security. Set WORKSHOP_ADMIN_PASSWORD_HASH in .env
-// Example: WORKSHOP_ADMIN_PASSWORD_HASH=d90374a05f70fbef8134ddbba7ad1789372784986d39a2e9c9461fc05134b4b7
-const workshopHash = process.env.WORKSHOP_ADMIN_PASSWORD_HASH || '';
+// Admin password configuration:
+// Option A: Provide WORKSHOP_ADMIN_PASSWORD_HASH (preferred, SHA-256 hash).
+// Option B: Provide WORKSHOP_ADMIN_PASSWORD (plain) and hash will be derived at runtime.
+// If both are present, HASH wins.
+const workshopHash = process.env.WORKSHOP_ADMIN_PASSWORD_HASH || (process.env.WORKSHOP_ADMIN_PASSWORD ? sha256(process.env.WORKSHOP_ADMIN_PASSWORD) : '');
 
 // In-memory session store (token -> timestamp)
 const SESSIONS = new Map();
