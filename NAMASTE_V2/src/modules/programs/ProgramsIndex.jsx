@@ -32,14 +32,24 @@ export default function ProgramsIndex(){
   const [creating,setCreating] = useState(false);
   const [err,setErr] = useState('');
   const newRef = useRef(null);
-  const [form,setForm] = useState({ id:null, title:'', dateLabel:'', summary:'', sessions:'', totalHours:'', location:'', tuition:'', contacts:'', email:'', focus:'', images:[], imageInput:'', status:'upcoming' });
+  const emptyTrans = { ko:'', en:'' };
+  const emptyForm = { id:null, title:{...emptyTrans}, dateLabel:{...emptyTrans}, summary:{...emptyTrans}, sessionsKo:'', sessionsEn:'', totalHours:'', location:{...emptyTrans}, tuition:{...emptyTrans}, contacts:{...emptyTrans}, email:'', focus:{...emptyTrans}, images:[], imageInput:'', status:'upcoming' };
+  const [form,setForm] = useState(emptyForm);
   async function loadDyn(){
     try { setLoadingDyn(true); const r = await fetch('/api/workshops'); const j = await r.json(); setDyn(j.items||[]); } catch{} finally { setLoadingDyn(false);} }
   async function checkAdmin(){ try { const r= await fetch('/api/admin/me'); const j= await r.json(); const ok=!!j.loggedIn; setAdmin(ok); if(ok) loadDyn(); } catch{} }
   useEffect(()=>{ checkAdmin(); },[]);
-  async function createOrSave(e){ e.preventDefault(); setErr(''); setCreating(true); try {
+  async function createOrSave(e){ e.preventDefault(); setErr('');
+    // Validation: all bilingual fields must have both ko & en
+    const mustTrans = ['title','dateLabel','summary','location','tuition','contacts','focus'];
+    const missing = mustTrans.filter(f=> !form[f].ko.trim() || !form[f].en.trim());
+    const sessionsKo = form.sessionsKo.split('\n').map(s=> s.trim()).filter(Boolean);
+    const sessionsEn = form.sessionsEn.split('\n').map(s=> s.trim()).filter(Boolean);
+    if(!sessionsKo.length || !sessionsEn.length) missing.push('sessions');
+    if(missing.length){ setErr('다국어 필드 누락: '+missing.join(', ')); return; }
+    setCreating(true); try {
       const images = form.images.filter(Boolean);
-      const payload = { title:form.title.trim(), dateLabel:form.dateLabel.trim(), summary:form.summary.trim(), startDate:null, totalHours: form.totalHours.trim(), sessions: form.sessions.split('\n').filter(Boolean), location: form.location.trim(), tuition: form.tuition.trim(), contacts: form.contacts.trim(), email: form.email.trim(), focus: form.focus.trim(), images, status: form.status };
+      const payload = { title:{ko:form.title.ko.trim(), en:form.title.en.trim()}, dateLabel:{ko:form.dateLabel.ko.trim(), en:form.dateLabel.en.trim()}, summary:{ko:form.summary.ko.trim(), en:form.summary.en.trim()}, startDate:null, totalHours: form.totalHours.trim(), sessions:{ ko: sessionsKo, en: sessionsEn }, location:{ko:form.location.ko.trim(), en:form.location.en.trim()}, tuition:{ko:form.tuition.ko.trim(), en:form.tuition.en.trim()}, contacts:{ko:form.contacts.ko.trim(), en:form.contacts.en.trim()}, email: form.email.trim(), focus:{ko:form.focus.ko.trim(), en:form.focus.en.trim()}, images, status: form.status };
       let r,j;
       if(form.id){
         r = await fetch('/api/workshops/'+form.id,{method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
@@ -47,12 +57,35 @@ export default function ProgramsIndex(){
         r = await fetch('/api/workshops',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
       }
       j = await r.json(); if(!r.ok) throw new Error(j.error||'save_failed');
-      setForm({ id:null, title:'', dateLabel:'', summary:'', sessions:'', totalHours:'', location:'', tuition:'', contacts:'', email:'', focus:'', images:[], imageInput:'', status:'upcoming'});
+      setForm(emptyForm);
       setFormOpen(false); loadDyn(); setTimeout(()=> newRef.current?.scrollIntoView({behavior:'smooth'}), 50);
     } catch(e){ setErr(e.message);} finally { setCreating(false);} }
   async function delDyn(id){ if(!window.confirm('Delete this workshop?')) return; try { const r = await fetch('/api/workshops/'+id,{method:'DELETE'}); const j= await r.json(); if(!r.ok) throw new Error(j.error||'delete_failed'); setDyn(d=> d.filter(x=> x.id!==id)); } catch(e){ alert(e.message); } }
   async function cloneDyn(id){ try { const r = await fetch('/api/workshops/'+id+'/clone',{method:'POST'}); const j= await r.json(); if(!r.ok) throw new Error(j.error||'clone_failed'); loadDyn(); } catch(e){ alert(e.message); } }
-  function editDyn(w){ setForm({ id:w.id, title:w.title, dateLabel:w.dateLabel, summary:w.summary, sessions:(w.sessions||[]).join('\n'), totalHours:w.totalHours||'', location:w.location, tuition:w.tuition, contacts:w.contacts, email:w.email, focus:w.focus, images:[...(w.images||[])], imageInput:'', status:w.status||'upcoming'}); setFormOpen(true); setTimeout(()=> newRef.current?.scrollIntoView({behavior:'smooth'}), 50); }
+  function editDyn(w){
+    // Normalize possible legacy strings to bilingual fields
+    const norm = f=> (typeof w[f]==='string'? {ko:w[f], en:w[f]} : (w[f]||{ko:'',en:''}));
+    const sessionsKo = Array.isArray(w.sessions?.ko)? w.sessions.ko : Array.isArray(w.sessions)? w.sessions: [];
+    const sessionsEn = Array.isArray(w.sessions?.en)? w.sessions.en : Array.isArray(w.sessions)? w.sessions: [];
+    setForm({
+      id:w.id,
+      title: norm('title'),
+      dateLabel: norm('dateLabel'),
+      summary: norm('summary'),
+      sessionsKo: sessionsKo.join('\n'),
+      sessionsEn: sessionsEn.join('\n'),
+      totalHours: w.totalHours||'',
+      location: norm('location'),
+      tuition: norm('tuition'),
+      contacts: norm('contacts'),
+      email: w.email||'',
+      focus: norm('focus'),
+      images:[...(w.images||[])],
+      imageInput:'',
+      status:w.status||'upcoming'
+    });
+    setFormOpen(true); setTimeout(()=> newRef.current?.scrollIntoView({behavior:'smooth'}), 50);
+  }
   function addImage(){
     const url = (form.imageInput||'').trim();
     if(!url) return;
@@ -192,17 +225,39 @@ function ProgramsOverview({featuredWorkshop, moreUpcoming, dynamicList=[], admin
                           <option value="upcoming">{pg.manage.upcoming}</option>
                         </select>
                       </div>
-                      {['title','dateLabel','summary','sessions','totalHours','location','tuition','contacts','email','focus'].map(k=> (
-                        <div key={k} className={k==='summary'|| k==='sessions'|| k==='focus'? 'md:col-span-2 flex flex-col gap-1':'flex flex-col gap-1'}>
-                          <label className="font-semibold text-brand-700/80 uppercase tracking-wide">{k}</label>
-                          {['summary','sessions','focus'].includes(k)? (
-                            <textarea rows={k==='summary'?3: k==='focus'?2:3} value={handlers.form[k]} onChange={e=> handlers.setForm(f=>({...f,[k]:e.target.value}))} className="px-3 py-2 rounded border bg-white/70" required={['title','dateLabel','summary'].includes(k)} />
-                          ):(
-                            <input value={handlers.form[k]} onChange={e=> handlers.setForm(f=>({...f,[k]:e.target.value}))} className="px-3 py-2 rounded border bg-white/70" required={['title','dateLabel','summary'].includes(k)} />
-                          )}
-                          {k==='sessions' && <p className="text-[10px] text-brand-600/70">세션별 한 줄 (줄바꿈)</p>}
+                      {/* Bilingual fields */}
+                      {['title','dateLabel','summary','location','tuition','contacts','focus'].map(k=> (
+                        <div key={k} className={['summary','focus'].includes(k)? 'md:col-span-2 flex flex-col gap-2':'flex flex-col gap-2'}>
+                          <label className="font-semibold text-brand-700/80 uppercase tracking-wide">{k} <span className="text-[10px] text-brand-600/70">(KO / EN)</span></label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input placeholder="KO" value={handlers.form[k].ko} onChange={e=> handlers.setForm(f=> ({...f, [k]: {...f[k], ko:e.target.value}}))} className="px-3 py-2 rounded border bg-white/70 text-[12px]" required />
+                            <input placeholder="EN" value={handlers.form[k].en} onChange={e=> handlers.setForm(f=> ({...f, [k]: {...f[k], en:e.target.value}}))} className="px-3 py-2 rounded border bg-white/70 text-[12px]" required />
+                          </div>
                         </div>
                       ))}
+                      {/* Sessions bilingual */}
+                      <div className="md:col-span-2 flex flex-col gap-2">
+                        <label className="font-semibold text-brand-700/80 uppercase tracking-wide">sessions <span className="text-[10px] text-brand-600/70">(KO / EN)</span></label>
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <textarea placeholder="세션별 한 줄 (KO)" rows={3} value={handlers.form.sessionsKo} onChange={e=> handlers.setForm(f=> ({...f, sessionsKo:e.target.value}))} className="px-3 py-2 rounded border bg-white/70 text-[12px]" required />
+                            <p className="text-[10px] text-brand-600/70">줄바꿈 = 새 세션 (KO)</p>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <textarea placeholder="One line per session (EN)" rows={3} value={handlers.form.sessionsEn} onChange={e=> handlers.setForm(f=> ({...f, sessionsEn:e.target.value}))} className="px-3 py-2 rounded border bg-white/70 text-[12px]" required />
+                            <p className="text-[10px] text-brand-600/70">Line break = new session (EN)</p>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Total hours & email (single language) */}
+                      <div className="flex flex-col gap-1">
+                        <label className="font-semibold text-brand-700/80 uppercase tracking-wide">totalHours</label>
+                        <input value={handlers.form.totalHours} onChange={e=> handlers.setForm(f=> ({...f, totalHours:e.target.value}))} className="px-3 py-2 rounded border bg-white/70 text-[12px]" />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-semibold text-brand-700/80 uppercase tracking-wide">email</label>
+                        <input type="email" value={handlers.form.email} onChange={e=> handlers.setForm(f=> ({...f, email:e.target.value}))} className="px-3 py-2 rounded border bg-white/70 text-[12px]" required />
+                      </div>
                       {/* Images manager */}
                       <div className="md:col-span-2 flex flex-col gap-2">
                         <label className="font-semibold text-brand-700/80 uppercase tracking-wide">Images</label>
@@ -253,22 +308,22 @@ function ProgramsOverview({featuredWorkshop, moreUpcoming, dynamicList=[], admin
                   </div>
                   <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6">
                     <header className="space-y-3">
-                      <h4 className="text-[12px] font-medium tracking-widest text-brand-600">{w.dateLabel}</h4>
-                      <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">{w.title}</h3>
-                      <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">{w.summary}</p>
+                      <h4 className="text-[12px] font-medium tracking-widest text-brand-600">{w.dateLabel?.[lang] || w.dateLabel?.ko || w.dateLabel}</h4>
+                      <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">{w.title?.[lang] || w.title?.ko || w.title}</h3>
+                      <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">{w.summary?.[lang] || w.summary?.ko || w.summary}</p>
                     </header>
                     <div className="grid sm:grid-cols-2 gap-6 text-[13px] leading-relaxed">
                       <ul className="space-y-2 text-brand-800/80">
-                        <li><strong className="text-brand-700">{pg.session1}:</strong> {w.sessions[0]}</li>
-                        <li><strong className="text-brand-700">{pg.session2}:</strong> {w.sessions[1]}</li>
+                        <li><strong className="text-brand-700">{pg.session1}:</strong> {(w.sessions?.[lang]||w.sessions?.ko||w.sessions)?.[0]}</li>
+                        <li><strong className="text-brand-700">{pg.session2}:</strong> {(w.sessions?.[lang]||w.sessions?.ko||w.sessions)?.[1]}</li>
                         <li><strong className="text-brand-700">{pg.totalHours}:</strong> {w.totalHours}{lang==='ko'? '시간':''}</li>
-                        <li><strong className="text-brand-700">{pg.location}:</strong> {w.location}</li>
+                        <li><strong className="text-brand-700">{pg.location}:</strong> {w.location?.[lang] || w.location?.ko || w.location}</li>
                       </ul>
                       <ul className="space-y-2 text-brand-800/80">
-                        <li><strong className="text-brand-700">{pg.tuition}:</strong> {w.tuition}</li>
-                        <li><strong className="text-brand-700">{pg.contact}:</strong> {w.contacts}</li>
+                        <li><strong className="text-brand-700">{pg.tuition}:</strong> {w.tuition?.[lang] || w.tuition?.ko || w.tuition}</li>
+                        <li><strong className="text-brand-700">{pg.contact}:</strong> {w.contacts?.[lang] || w.contacts?.ko || w.contacts}</li>
                         <li><strong className="text-brand-700">{pg.email}:</strong> {w.email}</li>
-                        <li><strong className="text-brand-700">{pg.focus}:</strong> {w.focus}</li>
+                        <li><strong className="text-brand-700">{pg.focus}:</strong> {w.focus?.[lang] || w.focus?.ko || w.focus}</li>
                       </ul>
                     </div>
                     {admin && <div className="pt-2"><button onClick={()=> handlers.delDyn(w.id)} className="text-[11px] px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-500">삭제</button></div>}
@@ -343,22 +398,22 @@ function WorkshopCard({w, lang, pg, admin, onDelete, onClone, onEdit, dynamic}){
       </div>
       <div className="md:w-1/2 p-8 md:p-12 flex flex-col gap-6">
         <header className="space-y-3">
-          <h4 className="text-[12px] font-medium tracking-widest text-brand-600">{w.dateLabel}</h4>
-          <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">{w.title}</h3>
-          <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">{w.summary}</p>
+          <h4 className="text-[12px] font-medium tracking-widest text-brand-600">{w.dateLabel?.[lang] || w.dateLabel?.ko || w.dateLabel}</h4>
+          <h3 className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-brand-800">{w.title?.[lang] || w.title?.ko || w.title}</h3>
+          <p className="text-[14px] md:text-[15px] leading-relaxed text-brand-800/80">{w.summary?.[lang] || w.summary?.ko || w.summary}</p>
         </header>
         <div className="grid sm:grid-cols-2 gap-6 text-[13px] leading-relaxed">
           <ul className="space-y-2 text-brand-800/80">
-            <li><strong className="text-brand-700">{pg.session1}:</strong> {w.sessions?.[0]}</li>
-            <li><strong className="text-brand-700">{pg.session2}:</strong> {w.sessions?.[1]}</li>
+            <li><strong className="text-brand-700">{pg.session1}:</strong> {(w.sessions?.[lang]||w.sessions?.ko||w.sessions)?.[0]}</li>
+            <li><strong className="text-brand-700">{pg.session2}:</strong> {(w.sessions?.[lang]||w.sessions?.ko||w.sessions)?.[1]}</li>
             <li><strong className="text-brand-700">{pg.totalHours}:</strong> {w.totalHours}{lang==='ko'? '시간':''}</li>
-            <li><strong className="text-brand-700">{pg.location}:</strong> {w.location}</li>
+            <li><strong className="text-brand-700">{pg.location}:</strong> {w.location?.[lang] || w.location?.ko || w.location}</li>
           </ul>
           <ul className="space-y-2 text-brand-800/80">
-            <li><strong className="text-brand-700">{pg.tuition}:</strong> {w.tuition}</li>
-            <li><strong className="text-brand-700">{pg.contact}:</strong> {w.contacts}</li>
+            <li><strong className="text-brand-700">{pg.tuition}:</strong> {w.tuition?.[lang] || w.tuition?.ko || w.tuition}</li>
+            <li><strong className="text-brand-700">{pg.contact}:</strong> {w.contacts?.[lang] || w.contacts?.ko || w.contacts}</li>
             <li><strong className="text-brand-700">{pg.email}:</strong> {w.email}</li>
-            <li><strong className="text-brand-700">{pg.focus}:</strong> {w.focus}</li>
+            <li><strong className="text-brand-700">{pg.focus}:</strong> {w.focus?.[lang] || w.focus?.ko || w.focus}</li>
           </ul>
         </div>
         {admin && <div className="pt-2 flex gap-2 flex-wrap">

@@ -1,25 +1,43 @@
 [
   {
-    "id": "september-workshop-with-eyal-shifroni-1757347051754-copy-1757347460965",
-    "dateLabel": "2025 SEPTEMBER",
-    "title": "Eyal Shifroni 선생님 9월 워크숍 (복제)",
-    "summary": "첫 공식 한국 방문. Iyengar Yoga 정렬·프롭·시퀀스·티칭 통합 접근을 3일 집중 구조로 체험합니다.",
+    "id": "september-workshop-with-eyal-shifroni-1757347051754-copy-1757347460965-copy-1757347864920-copy-1757347905819",
+    "dateLabel": {
+      "ko": "2025 SEPTEMBER",
+      "en": "2025 SEPTEMBER"
+    },
+    "title": {
+      "ko": "Eyal Shifroni 선생님 9월 워크숍",
+      "en": "September Workshop with Eyal Shifroni"
+    },
+    "summary": {
+      "ko": "첫 공식 한국 방문. Iyengar Yoga 정렬·프롭·시퀀스·티칭 통합 접근을 3일 집중 구조로 체험합니다.",
+      "en": "첫 공식 한국 방문. Iyengar Yoga 정렬·프롭·시퀀스·티칭 통합 접근을 3일 집중 구조로 체험합니다."
+    },
     "startDate": null,
     "totalHours": "15",
-    "sessions": [
-      "세션1: 9/12 14:00–17:00",
-      "세션2: 9/13 09:30–12:30 · 14:30–16:30"
-    ],
-    "location": "Space 920 (Yeoksam-ro 9-gil 20 B1, Gangnam)",
-    "tuition": "₩429,000 (VAT incl.)",
-    "contacts": "Myungkyu Kim · Yunseo Hong · Aram Kim",
+    "sessions": [],
+    "location": {
+      "ko": "Space 920 (Yeoksam-ro 9-gil 20 B1, Gangnam)",
+      "en": "Space 920 (Yeoksam-ro 9-gil 20 B1, Gangnam)"
+    },
+    "tuition": {
+      "ko": "₩429,000 (VAT incl.)",
+      "en": "₩429,000 (VAT incl.)"
+    },
+    "contacts": {
+      "ko": "Myungkyu Kim · Yunseo Hong · Aram Kim",
+      "en": "Myungkyu Kim · Yunseo Hong · Aram Kim"
+    },
     "email": "iyengaryogacommunitykorea@gmail.com",
-    "focus": "Integrated alignment/props · Thematic sequences · Counter & Restorative",
+    "focus": {
+      "ko": "Integrated alignment/props · Thematic sequences · Counter & Restorative",
+      "en": "Integrated alignment/props · Thematic sequences · Counter & Restorative"
+    },
     "images": [
       "https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_1600/gallery/vonomctpuokq780vkl76.jpg",
       "https://res.cloudinary.com/drzjmobkb/image/upload/f_auto,q_auto,w_1600/gallery/bptbyp2nkj7l1w6qip99.jpg"
     ],
     "status": "ongoing",
-    "createdAt": "2025-09-08T16:04:20.965Z"
+    "createdAt": "2025-09-08T16:11:45.819Z"
   }
 ]

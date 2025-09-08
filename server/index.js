@@ -244,8 +244,37 @@ const port = process.env.PORT || 4000;
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const WORKSHOPS_FILE = path.join(DATA_DIR, 'workshops.json');
 if(!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, {recursive:true});
+function normalizeWorkshop(w){
+  if(!w || typeof w!=='object') return w;
+  const transFields = ['title','dateLabel','summary','location','tuition','contacts','focus'];
+  transFields.forEach(f=> {
+    const v = w[f];
+    if(typeof v === 'string'){ // legacy -> wrap
+      w[f] = { ko: v, en: v };
+    } else if(v && typeof v==='object') {
+      // ensure both keys exist (fallback duplicate if single provided)
+      if(v.ko && !v.en) v.en = v.ko;
+      if(v.en && !v.ko) v.ko = v.en;
+    } else if(!v){
+      w[f] = { ko:'', en:'' };
+    }
+  });
+  // sessions: legacy array -> wrap
+  if(Array.isArray(w.sessions)){
+    w.sessions = { ko: w.sessions, en: w.sessions };
+  } else if(w.sessions && typeof w.sessions==='object') {
+    if(Array.isArray(w.sessions.ko) && !Array.isArray(w.sessions.en)) w.sessions.en = [...w.sessions.ko];
+    if(Array.isArray(w.sessions.en) && !Array.isArray(w.sessions.ko)) w.sessions.ko = [...w.sessions.en];
+  } else {
+    w.sessions = { ko: [], en: [] };
+  }
+  return w;
+}
 function loadWorkshops(){
-  try { return JSON.parse(fs.readFileSync(WORKSHOPS_FILE,'utf8')); } catch { return []; }
+  try {
+    const raw = JSON.parse(fs.readFileSync(WORKSHOPS_FILE,'utf8'));
+    return Array.isArray(raw)? raw.map(normalizeWorkshop):[];
+  } catch { return []; }
 }
 function saveWorkshops(list){
   try { fs.writeFileSync(WORKSHOPS_FILE, JSON.stringify(list,null,2)); } catch(e){ console.error('[workshops:save]', e); }
@@ -333,19 +362,35 @@ app.get('/api/workshops', (_req,res)=> {
 // Create
 app.post('/api/workshops', requireWorkshopAuth, (req,res)=> {
   const b = req.body||{};
-  const required = ['title','dateLabel','summary','sessions','location','tuition','contacts','email','focus'];
-  const missing = required.filter(k=> !b[k]);
-  if(missing.length) return res.status(400).json({error:'missing_fields', fields:missing});
-  const id = b.id || (b.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Date.now());
+  const transFields = ['title','dateLabel','summary','location','tuition','contacts','focus'];
+  const requiredSimple = ['email'];
+  // Validate bilingual
+  const missingTrans = [];
+  for(const f of transFields){
+    const v = b[f];
+    if(!v || typeof v!=='object' || !v.ko || !v.en){
+      missingTrans.push(f);
+    }
+  }
+  // sessions special (object with ko/en array)
+  if(!b.sessions || typeof b.sessions!=='object' || !Array.isArray(b.sessions.ko) || !Array.isArray(b.sessions.en) || b.sessions.ko.length===0 || b.sessions.en.length===0){
+    missingTrans.push('sessions');
+  }
+  const missingSimple = requiredSimple.filter(f=> !b[f]);
+  if(missingTrans.length || missingSimple.length){
+    return res.status(400).json({ error:'missing_fields', trans:missingTrans, simple: missingSimple });
+  }
+  const baseSlug = (b.title.ko || b.title.en || '').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const id = b.id || (baseSlug+'-'+Date.now());
   const status = ['ongoing','upcoming'].includes(b.status) ? b.status : 'upcoming';
-  const item = {
+  const item = normalizeWorkshop({
     id,
     dateLabel: b.dateLabel,
     title: b.title,
     summary: b.summary,
     startDate: b.startDate||null,
     totalHours: b.totalHours||null,
-    sessions: Array.isArray(b.sessions)? b.sessions : [],
+    sessions: b.sessions,
     location: b.location,
     tuition: b.tuition,
     contacts: b.contacts,
@@ -354,7 +399,7 @@ app.post('/api/workshops', requireWorkshopAuth, (req,res)=> {
     images: Array.isArray(b.images)? b.images : [],
     status,
     createdAt: new Date().toISOString()
-  };
+  });
   workshops.push(item);
   saveWorkshops(workshops);
   res.status(201).json({ ok:true, item });
@@ -376,15 +421,24 @@ app.put('/api/workshops/:id', requireWorkshopAuth, (req,res)=> {
   const idx = workshops.findIndex(w=> w.id===id);
   if(idx===-1) return res.status(404).json({error:'not_found'});
   const w = workshops[idx];
-  const fields = ['title','dateLabel','summary','startDate','totalHours','sessions','location','tuition','contacts','email','focus','images','status'];
-  fields.forEach(f=> {
-    if(b[f]!==undefined){
-      if(f==='sessions') w.sessions = Array.isArray(b.sessions)? b.sessions:[];
-      else if(f==='images') w.images = Array.isArray(b.images)? b.images:[];
-      else if(f==='status') w.status = ['ongoing','upcoming'].includes(b.status)? b.status : (w.status||'upcoming');
-      else w[f] = b[f];
+  const transFields = ['title','dateLabel','summary','location','tuition','contacts','focus'];
+  transFields.forEach(f=> {
+    if(b[f]){
+      if(typeof b[f]==='object' && b[f].ko && b[f].en){
+        w[f] = { ko: String(b[f].ko), en: String(b[f].en) };
+      }
     }
   });
+  if(b.sessions && typeof b.sessions==='object'){
+    if(Array.isArray(b.sessions.ko) && Array.isArray(b.sessions.en)){
+      w.sessions = { ko: b.sessions.ko, en: b.sessions.en };
+    }
+  }
+  const simple = ['startDate','totalHours','email'];
+  simple.forEach(f=> { if(b[f]!==undefined) w[f]=b[f]; });
+  if(Array.isArray(b.images)) w.images = b.images;
+  if(b.status) w.status = ['ongoing','upcoming'].includes(b.status)? b.status : w.status;
+  normalizeWorkshop(w);
   saveWorkshops(workshops);
   res.json({ ok:true, item: w });
 });
