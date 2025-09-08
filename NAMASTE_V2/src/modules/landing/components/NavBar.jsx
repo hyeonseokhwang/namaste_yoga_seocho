@@ -215,7 +215,7 @@ export default function NavBar(){
           <div className="flex flex-col gap-3">
             <p className="text-sm text-brand-700">세션 활성화됨.</p>
             <div className="flex gap-2 flex-wrap">
-              <a href="/admin/workshops" className="px-4 py-2 rounded bg-brand-700 text-white text-sm hover:bg-brand-600">Workshops</a>
+              <a href="/programs" className="px-4 py-2 rounded bg-brand-700 text-white text-sm hover:bg-brand-600">Workshops</a>
               <a href="/gallery" className="px-4 py-2 rounded bg-indigo-600 text-white text-sm hover:bg-indigo-500">Gallery</a>
               <button type="button" onClick={doLogout} className="px-4 py-2 rounded bg-gray-300 text-sm hover:bg-gray-400 text-gray-800">Logout</button>
             </div>

@@ -8,6 +8,7 @@ import GalleryPage from './gallery/GalleryPage.jsx';
 import TeachersPage from './iyengar/Teachers.jsx';
 import FAQPage from './faq/FAQPage.jsx';
 import WorkshopsAdmin from './admin/WorkshopsAdmin.jsx';
+import { Navigate } from 'react-router-dom';
 
 export default function App(){
   return (
@@ -24,7 +25,8 @@ export default function App(){
   <Route path="/teachers" element={<TeachersPage />} />
   <Route path="/faq" element={<FAQPage />} />
   <Route path="/gallery" element={<GalleryPage />} />
-  <Route path="/admin/workshops" element={<WorkshopsAdmin />} />
+  {/* Backward compatibility: redirect old admin workshops path to programs page */}
+  <Route path="/admin/workshops" element={<Navigate to="/programs" replace />} />
       </Routes>
     </BrowserRouter>
   );
