@@ -249,10 +249,9 @@ function saveWorkshops(list){
 let workshops = loadWorkshops();
 
 function sha256(v){ return crypto.createHash('sha256').update(v).digest('hex'); }
-// Fallback default password (requested) if env hash not supplied.
-// NOTE: For production, set WORKSHOP_ADMIN_PASSWORD_HASH to override this.
-const DEFAULT_ADMIN_PASSWORD = 'namaste11!';
-const workshopHash = process.env.WORKSHOP_ADMIN_PASSWORD_HASH || sha256(DEFAULT_ADMIN_PASSWORD);
+// Removed hard-coded default password for security. Set WORKSHOP_ADMIN_PASSWORD_HASH in .env
+// Example: WORKSHOP_ADMIN_PASSWORD_HASH=d90374a05f70fbef8134ddbba7ad1789372784986d39a2e9c9461fc05134b4b7
+const workshopHash = process.env.WORKSHOP_ADMIN_PASSWORD_HASH || '';
 
 // In-memory session store (token -> timestamp)
 const SESSIONS = new Map();
